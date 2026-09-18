@@ -2,9 +2,9 @@
 
 **Propósito:** cerrar el problema y los requisitos antes de diseñar. Este
 documento es la entrada de F1; no contiene diseño ni código.
-**Estado:** F0 **PARCIAL** — el problema, el resultado observable y los
-requisitos están cerrados con fuente; quedan tres preguntas abiertas
-declaradas en §8.
+**Estado:** F0 **OK** — cerrado el 18 de septiembre de 2026. El problema, el
+resultado observable y los requisitos están cerrados con fuente, y las tres
+preguntas que quedaban abiertas las respondió el humano el mismo día (§8).
 **Fecha:** 18 de septiembre de 2026
 **Fuente principal:** `PROP-005` (tres partes) del proyecto `alubia`, citado
 como **procedencia**. Este proyecto no hereda sus contratos: ver §7.
@@ -161,12 +161,21 @@ Criterio de aceptación: la biblioteca compila, corre y pasa sus pruebas sin
   ninguna pieza del canal de agente instalada.
 Prioridad: imprescindible
 
-REQ-15 [restricción] [fuente: decisión 1 del §8]
+REQ-15 [restricción] [fuente: decisión 1 del §8 y RESPUESTA-3]
 Enunciado: el proyecto se distribuye con licencia Apache-2.0 y se consume
-  desde otro proyecto sin publicar en un registro de paquetes.
+  desde otro proyecto sin publicar en un registro de paquetes, mientras no
+  haya consumidores fuera de este autor.
 Prioridad: imprescindible
 Criterio de aceptación: un consumidor externo instala la biblioteca desde su
   repositorio y ejecuta el caso de uso de §2 con las instrucciones del README.
+
+REQ-18 [restricción] [fuente: RESPUESTA-1 del §8]
+Enunciado: Safari es navegador objetivo, y con él los parches de motor que
+  hacen usable la voz en WebKit; Chrome y Edge también lo son, sobre el mismo
+  motor entre ellos.
+Criterio de aceptación: cada parche obligatorio tiene su prueba, de modo que
+  quitarlo ponga una prueba en rojo.
+Prioridad: imprescindible
 ```
 
 ### 5.3 No funcionales
@@ -220,41 +229,45 @@ El corpus de `alubia` —sus ADR, sus specs y sus reglas de minimización— se 
 aquí como **de dónde viene el diseño**. Este proyecto hereda las propiedades
 técnicas que las hacen posibles, no las decisiones.
 
-## 8. Decisiones cerradas y preguntas abiertas
+## 8. Decisiones cerradas
 
-**Cerradas** por instrucción humana del 18-sep-2026, y registradas como ADR en
-F1: repositorio propio con Apache-2.0 y `alubia` como consumidor externo; el
-canal de agente entra después del núcleo; interfaz de transporte más un relay
-de referencia que no es producto; sin servidor MCP en la primera versión;
-español primero e inglés después sobre un mecanismo de paquetes de idioma;
-sin persistencia; y sin modelo de IA, pero con sus puertos desde el día uno.
+**Siete decisiones** por instrucción humana del 18-sep-2026, registradas como
+ADR en F1: repositorio propio con Apache-2.0 y `alubia` como consumidor
+externo; el canal de agente entra después del núcleo; interfaz de transporte
+más un relay de referencia que no es producto; sin servidor MCP en la primera
+versión; español primero e inglés después sobre un mecanismo de paquetes de
+idioma; sin persistencia; y sin modelo de IA, pero con sus puertos desde el
+día uno.
 
-**Abiertas.** Ninguna de las tres impide empezar F1, y las tres cambian el
-diseño si se responden al revés:
+**Cerradas por el humano el 18-sep-2026.** Las tres preguntas que quedaban
+abiertas, con su respuesta textual:
 
 ```text
-PREGUNTA-1: ¿Qué navegadores y versiones mínimas son el objetivo declarado?
-Por qué importa: fija qué parches de WebKit son obligatorios y cuáles son
-  opcionales, y con ello el alcance de las pruebas.
-Opciones: (a) Safari móvil y Chrome móvil, versiones vigentes —recomendado,
-  porque es donde están los parches que motivan el proyecto—; (b) sólo Chrome
-  de escritorio, que reduce mucho el alcance y también el valor.
+RESPUESTA-1: «navegadores safari, chrome y edge»
+Consecuencia: los parches de WebKit pasan a ser obligatorios, porque Safari es
+  objetivo declarado y es el motor que los motivó. Chrome y Edge comparten
+  motor (Chromium/Blink), así que el alcance real son dos motores y tres
+  navegadores. Las versiones mínimas concretas quedan sin fijar y se deciden
+  en F1, con su ADR.
+Registrada en: docs/adr/ADR-009-browser-targets.md
 
-PREGUNTA-2: ¿`alubia` consume el núcleo como dependencia desde este
-  repositorio, o copia el código mientras madura?
-Por qué importa: cambia si el núcleo necesita una frontera estable desde el
-  primer día y si hay que soportar dos formatos de módulo.
-Opciones: (a) dependencia desde el repositorio —recomendado, es la única forma
-  de probar el REQ-15 con un consumidor real—; (b) copia temporal, que difiere
-  el problema pero duplica el mantenimiento.
+RESPUESTA-2: «alubia copia mientras madura, tiempo estimado 3 meses, después
+  evaluar»
+Consecuencia: durante esa etapa el primer consumidor mantiene una instantánea,
+  así que la superficie pública del núcleo tiene que ser pequeña y estable por
+  revisión. La revisión estimada a 3 meses es una tarea con fecha, no una
+  intención, y su fecha exacta queda pendiente de declarar.
+Registrada en: docs/adr/ADR-010-distribution-and-first-consumer.md
 
-PREGUNTA-3: ¿La primera versión se publica en un registro de paquetes, o sólo
-  desde el repositorio?
-Por qué importa: un registro obliga a versionado semántico público y a una
-  política de compatibilidad que nadie pidió todavía.
-Opciones: (a) sólo repositorio —recomendado mientras no haya consumidores
-  fuera de este autor—; (b) registro, con la obligación de versionado que trae.
+RESPUESTA-3: «sólo repositorio mientras no haya consumidores fuera de él»
+Consecuencia: no se publica en ningún registro de paquetes, y con ello no nace
+  todavía la obligación de versionado semántico público. Es coherente con el
+  REQ-15, que exige consumo desde el repositorio.
+Registrada en: docs/adr/ADR-010-distribution-and-first-consumer.md
 ```
+
+Con estas tres respuestas, la lista de preguntas abiertas de F0 queda vacía.
+Las que F1 mantenga por su cuenta viven en su propia definición técnica.
 
 ## 9. Evidencia del entorno
 
@@ -276,21 +289,27 @@ EV-6: el gate de estructura y tamaños corre en este proyecto
 EV-7: el idioma humano y los idiomas del producto
   | elección del humano del 18-sep-2026 → español como idioma humano y como
   primer idioma del producto; inglés después sobre el mismo mecanismo [pass]
+EV-8: los navegadores objetivo y el modo de distribución
+  | instrucción directa del humano del 18-sep-2026 → Safari, Chrome y Edge;
+  el primer consumidor copia con revisión estimada a 3 meses; sólo repositorio
+  mientras no haya consumidores fuera [pass]
 ```
 
 ## 10. Reporte de fase
 
 ```text
-FASE F0: PARCIAL
-Gate: problema y resultado observable en una frase; REQ-* con fuente y
-  criterio; no objetivos; restricciones y entorno confirmados por evidencia.
+FASE F0: OK
+Gate: problema y resultado observable en una frase; REQ-* con fuente,
+  criterio y prioridad; no objetivos; restricciones y entorno confirmados por
+  evidencia; y preguntas abiertas respondidas.
 Evidencia:
 - gh api repos/kristhianmanue1/lalia-akuo → existe, público, Apache-2.0 [pass]
 - git log → 4fd8bf7 Initial commit; un solo archivo versionado [pass]
 - node --version → v24.15.0; python3 --version → 3.9.6 [pass]
-- python3 scripts/check_sizes.py → BLOQ por AGENTS.md y README.md ausentes,
-  que es exactamente lo que F2 crea [pass]
-Pendientes: PREGUNTA-1 (navegadores objetivo), PREGUNTA-2 (cómo consume
-  `alubia`), PREGUNTA-3 (registro de paquetes). Ninguna bloquea F1; las tres
-  se cierran con decisión humana antes de que F2 publique.
+- python3 scripts/check_sizes.py → OK, 47 archivos dentro de límites, el gate
+  y su hook en verde [pass]
+- instrucción del humano del 18-sep-2026 → las tres preguntas respondidas, y
+  sus consecuencias escritas en §8 y en ADR-009 y ADR-010 [pass]
+Pendientes: ninguno propio de F0. Pasan a F1: fijar las versiones mínimas de
+  navegador, y declarar la fecha exacta de la revisión de los 3 meses.
 ```

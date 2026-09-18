@@ -47,6 +47,6 @@ operación.
   validación de origen con rechazo explícito.
 - El consumidor que quiera canal de agente en producción aporta su propio
   transporte por la interfaz, bajo su política de datos.
-- El alcance exacto que se publica con la primera versión tiene una
-  ambigüedad de fuente registrada en
-  `docs/product/definicion-tecnica.md` §9.3.
+- El alcance exacto que se publica con la primera versión quedó resuelto: la
+  interfaz de transporte y el relay de referencia no entran en ella
+  (`docs/product/definicion-tecnica.md` §9.3, pregunta B).

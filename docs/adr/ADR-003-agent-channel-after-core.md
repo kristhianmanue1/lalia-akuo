@@ -43,9 +43,8 @@ prerequisito para no rehacer el núcleo cuando la etapa se ejecute.
 - El agente queda sin autoridad por contrato: propone texto y acción, nunca
   transiciona, nunca fija valores y nunca persiste.
 - El primer conjunto publicado no incluye el canal de agente.
-- Queda registrada una ambigüedad de fuente sobre el alcance exacto del
-  primer conjunto publicado: `alubia:PROP-005 §5.2` lista la interfaz de
-  transporte y el relay de referencia como parte de la primera versión,
-  mientras esta decisión y la secuencia de etapas los sitúan después del
-  núcleo. La pregunta concreta está en
-  `docs/product/definicion-tecnica.md` §9.3.
+- La ambigüedad de fuente sobre el alcance exacto del primer conjunto
+  publicado —`alubia:PROP-005 §5.2` listaba la interfaz de transporte y el
+  relay dentro de la primera versión, y esta decisión los sitúa después del
+  núcleo— quedó resuelta a favor de esta decisión y de `REQ-14`:
+  `docs/product/definicion-tecnica.md` §9.3, pregunta B.

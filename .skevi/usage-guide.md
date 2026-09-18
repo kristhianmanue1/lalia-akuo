@@ -30,6 +30,12 @@ Se declaran en `skevi-gate.json`, que es la fuente que lee el gate:
   `scripts/hooks/pre-push` es la versión recortada que corre sólo
   `check_sizes` y las pruebas: este proyecto todavía no tiene
   `docs/plans/` ni reportes de dos capas que verificar.
+- el corpus adoptado trae seis enlaces que no resuelven: `docs/ai-agent-guide/`
+  cita ADR y documentos de historia que viven en el repositorio de Skevi y que
+  aquí no se copian. Se dejan intactos a propósito —reescribirlos rompería la
+  igualdad de digest con el canon, y con ella la comprobación de drift—, y el
+  propio AGENTS.md del canon ya advierte que sus enlaces internos pueden
+  apuntar a repositorios ajenos y no resolver aquí.
 
 ## Idiomas elegidos
 
