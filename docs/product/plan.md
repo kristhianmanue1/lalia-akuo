@@ -170,9 +170,9 @@ Criterio de aceptación: un consumidor externo instala la biblioteca desde su
   repositorio y ejecuta el caso de uso de §2 con las instrucciones del README.
 
 REQ-18 [restricción] [fuente: RESPUESTA-1 del §8]
-Enunciado: Safari es navegador objetivo, y con él los parches de motor que
-  hacen usable la voz en WebKit; Chrome y Edge también lo son, sobre el mismo
-  motor entre ellos.
+Enunciado: Safari es navegador objetivo en móvil y en escritorio, y con él los
+  parches de motor que hacen usable la voz en WebKit; Chrome y Edge también lo
+  son, sobre el mismo motor entre ellos.
 Criterio de aceptación: cada parche obligatorio tiene su prueba, de modo que
   quitarlo ponga una prueba en rojo.
 Prioridad: imprescindible
@@ -243,12 +243,14 @@ día uno.
 abiertas, con su respuesta textual:
 
 ```text
-RESPUESTA-1: «navegadores safari, chrome y edge»
+RESPUESTA-1: «navegadores safari, chrome y edge» y, al precisar la
+  plataforma, «móvil y escritorio»
 Consecuencia: los parches de WebKit pasan a ser obligatorios, porque Safari es
   objetivo declarado y es el motor que los motivó. Chrome y Edge comparten
   motor (Chromium/Blink), así que el alcance real son dos motores y tres
-  navegadores. Las versiones mínimas concretas quedan sin fijar y se deciden
-  en F1, con su ADR.
+  navegadores, en las dos plataformas. Las versiones mínimas concretas quedan
+  sin fijar: el humano no dio números y declinó elegirlos, así que la pregunta
+  sigue abierta y acotada a eso.
 Registrada en: docs/adr/ADR-009-browser-targets.md
 
 RESPUESTA-2: «alubia copia mientras madura, tiempo estimado 3 meses, después
@@ -289,10 +291,10 @@ EV-6: el gate de estructura y tamaños corre en este proyecto
 EV-7: el idioma humano y los idiomas del producto
   | elección del humano del 18-sep-2026 → español como idioma humano y como
   primer idioma del producto; inglés después sobre el mismo mecanismo [pass]
-EV-8: los navegadores objetivo y el modo de distribución
-  | instrucción directa del humano del 18-sep-2026 → Safari, Chrome y Edge;
-  el primer consumidor copia con revisión el 30 de diciembre de 2026; sólo
-  repositorio mientras no haya consumidores fuera [pass]
+EV-8: los navegadores objetivo, la plataforma y el modo de distribución
+  | instrucción directa del humano del 18-sep-2026 → Safari, Chrome y Edge, en
+  móvil y escritorio; el primer consumidor copia con revisión el 30 de
+  diciembre de 2026; sólo repositorio mientras no haya consumidores fuera [pass]
 ```
 
 ## 10. Reporte de fase
@@ -312,8 +314,11 @@ Evidencia:
   sus consecuencias escritas en §8 y en ADR-009 y ADR-010 [pass]
 - instrucción del humano del 18-sep-2026 → la fecha de la revisión de la copia
   fijada el 30 de diciembre de 2026 [pass]
-Pendientes: ninguno propio de F0. Queda en F1, como pregunta abierta, el piso
-  de versiones por motor y la plataforma cubierta (su PREGUNTA-H): el humano
-  no dio números y declinó elegirlos, así que sigue sin responder y no se
+- instrucción del humano del 18-sep-2026 → la plataforma cubierta es móvil y
+  escritorio [pass]
+Pendientes: ninguno propio de F0. Queda en F1, como pregunta abierta y ya
+  acotada, el **piso de versiones por motor** (su PREGUNTA-H): el humano dio
+  navegadores, plataformas y fecha, pero no números de versión, y al pedírselos
+  declinó elegirlos, así que sigue sin responder y no se
   rellena por suposición.
 ```
