@@ -58,8 +58,9 @@ defecto dentro de la biblioteca:
   como contrato (`docs/product/definicion-tecnica.md` §2.2).
 - El punto donde el consumidor declara su política es una frontera con
   contrato propio (`docs/product/definicion-tecnica.md` §4.5).
-- Queda abierto qué hace el núcleo cuando falta una declaración de política
-  que un paso exige. Se registra como pregunta abierta en
-  `docs/product/definicion-tecnica.md` §9.3 y no se resuelve por supuesto.
+- Qué hace el núcleo cuando falta una declaración de política que un paso
+  exige quedó cerrado por derivación del fail-closed en F1: lo no declarado no
+  se habla y la declaración exigida es obligatoria
+  (`docs/product/definicion-tecnica.md` §9.3, pregunta A).
 - Toda garantía que dependa de la política del consumidor se declara como
   tal: el núcleo no puede prometer lo que no gobierna.

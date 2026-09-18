@@ -44,8 +44,8 @@ versión incluye exactamente un paquete, en español.
   como literal dentro del núcleo.
 - El paquete inglés, cuando llegue, es una etapa propia con sus pruebas por
   entrada de léxico, no una traducción de la etapa de español.
-- Quedan abiertos, y no se resuelven por supuesto: la forma de distribución
-  del paquete, la etiqueta de idioma base, el comportamiento cuando falta una
-  clave en el paquete y si los controles de la interfaz de conversación
-  también se cubren con paquetes de idioma. Están en
-  `docs/product/definicion-tecnica.md` §9.3.
+- La forma de distribución del paquete y la cobertura de los controles de la
+  interfaz quedaron cerradas por derivación —módulo del repositorio, y todo
+  texto visible por clave del catálogo—; la etiqueta concreta del idioma y el
+  comportamiento con una clave ausente son decisiones técnicas de E1
+  (`docs/product/definicion-tecnica.md` §9.3, preguntas C y D).

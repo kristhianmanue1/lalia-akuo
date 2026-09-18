@@ -53,8 +53,11 @@ determinista; y la superficie de herramientas del agente como catálogo.
 - El núcleo posee los contadores y los umbrales, y calcula el conjunto de
   decisiones admisibles. El puerto propone o redacta y solo puede devolver un
   elemento de ese conjunto; cualquier otra cosa es fallo del puerto.
-- Queda abierto si el valor numérico de esos umbrales es mecanismo fijo del
-  núcleo o declaración del consumidor: está en
+- Alcance aclarado en F1 al cerrar la pregunta G: el núcleo conserva los
+  contadores y la garantía de intento finito con salida a texto, y el valor
+  numérico de los umbrales lo declara el consumidor, porque una cifra heredada
+  de otro dominio es política de ese dominio (REQ-10 y `AGENTS.md`). La
+  decisión de este ADR no cambia; el cierre está en
   `docs/product/definicion-tecnica.md` §9.3.
 - Los textos que llevan el dato —readback, resumen, anuncio de guardado— no
   pasan por el puerto de redacción: los compone el núcleo con el valor ya
