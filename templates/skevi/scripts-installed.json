@@ -1,0 +1,13 @@
+{
+  "schema": "skevi/script-install/v1",
+  "version": "gate/v7",
+  "files": {
+    "check_sizes.py": "sha256:<digest-de-check_sizes.py-en-el-MANIFEST-fuente>",
+    "check_plans.py": "sha256:<digest-de-check_plans.py-en-el-MANIFEST-fuente>",
+    "check_reports.py": "sha256:<digest-de-check_reports.py-en-el-MANIFEST-fuente>",
+    "check_templates.py": "sha256:<digest-de-check_templates.py-en-el-MANIFEST-fuente>"
+  },
+  "installed_at": "<fecha-ISO-8601-de-la-copia>",
+  "source": "<url-o-ruta-del-origen>@<sha-del-commit>",
+  "customized": []
+}

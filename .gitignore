@@ -1,0 +1,20 @@
+.DS_Store
+__pycache__/
+*.pyc
+
+# Dependencias y artefactos de build
+node_modules/
+dist/
+coverage/
+
+# Secretos y credenciales: nunca se versionan. Las reglas son estructurales;
+# no se ignora documentación sólo por contener la palabra.
+id_rsa*
+id_ed25519*
+*.pem
+*.key
+/secrets/
+**/secrets/
+.env
+.env.*
+!.env.example

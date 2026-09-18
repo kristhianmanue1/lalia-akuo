@@ -1,0 +1,10 @@
+{
+  "schema": "skevi/script-install/v1",
+  "version": "gate/v7",
+  "files": {
+    "check_sizes.py": "sha256:a683c42a221370bc8d4a30132b76e60245b1a94fd8cb4585eb9436254830c23e"
+  },
+  "installed_at": "2026-09-18T20:11:22Z",
+  "source": "https://github.com/kristhianmanue1/skevi@fc58b5838d88802c418960c55e73567f769e4c9d",
+  "customized": []
+}

@@ -1,0 +1,12 @@
+{
+  "name": "lalia-akuo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Biblioteca de interacción por voz para la web, agnóstica de dominio: aporta mecanismo, el consumidor aporta política.",
+  "license": "Apache-2.0",
+  "scripts": {
+    "test": "node --test \"tests/*.test.js\"",
+    "gate": "python3 scripts/check_sizes.py && python3 -m unittest discover -s tests && npm test"
+  }
+}

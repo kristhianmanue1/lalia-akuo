@@ -1,0 +1,11 @@
+{
+  "schema": "skevi/template-install/v1",
+  "version": "plantillas/v9",
+  "files": {
+    "usage-guide.md": "sha256:<digest-de-usage-guide-en-el-MANIFEST-fuente>",
+    "architecture-overview.md": "sha256:<digest-de-architecture-overview-en-el-MANIFEST-fuente>"
+  },
+  "installed_at": "<fecha-ISO-8601-de-la-copia>",
+  "source": "<url-o-ruta-del-origen>@<sha-del-commit>",
+  "customized": []
+}
