@@ -255,8 +255,8 @@ RESPUESTA-2: «alubia copia mientras madura, tiempo estimado 3 meses, después
   evaluar»
 Consecuencia: durante esa etapa el primer consumidor mantiene una instantánea,
   así que la superficie pública del núcleo tiene que ser pequeña y estable por
-  revisión. La revisión estimada a 3 meses es una tarea con fecha, no una
-  intención, y su fecha exacta queda pendiente de declarar.
+  revisión. La revisión es una tarea con fecha, no una intención: **el 30 de
+  diciembre de 2026**, que el humano fijó el mismo 18-sep-2026.
 Registrada en: docs/adr/ADR-010-distribution-and-first-consumer.md
 
 RESPUESTA-3: «sólo repositorio mientras no haya consumidores fuera de él»
@@ -291,8 +291,8 @@ EV-7: el idioma humano y los idiomas del producto
   primer idioma del producto; inglés después sobre el mismo mecanismo [pass]
 EV-8: los navegadores objetivo y el modo de distribución
   | instrucción directa del humano del 18-sep-2026 → Safari, Chrome y Edge;
-  el primer consumidor copia con revisión estimada a 3 meses; sólo repositorio
-  mientras no haya consumidores fuera [pass]
+  el primer consumidor copia con revisión el 30 de diciembre de 2026; sólo
+  repositorio mientras no haya consumidores fuera [pass]
 ```
 
 ## 10. Reporte de fase
@@ -306,10 +306,14 @@ Evidencia:
 - gh api repos/kristhianmanue1/lalia-akuo → existe, público, Apache-2.0 [pass]
 - git log → 4fd8bf7 Initial commit; un solo archivo versionado [pass]
 - node --version → v24.15.0; python3 --version → 3.9.6 [pass]
-- python3 scripts/check_sizes.py → OK, 47 archivos dentro de límites, el gate
+- python3 scripts/check_sizes.py → OK, 53 archivos dentro de límites, el gate
   y su hook en verde [pass]
 - instrucción del humano del 18-sep-2026 → las tres preguntas respondidas, y
   sus consecuencias escritas en §8 y en ADR-009 y ADR-010 [pass]
-Pendientes: ninguno propio de F0. Pasan a F1: fijar las versiones mínimas de
-  navegador, y declarar la fecha exacta de la revisión de los 3 meses.
+- instrucción del humano del 18-sep-2026 → la fecha de la revisión de la copia
+  fijada el 30 de diciembre de 2026 [pass]
+Pendientes: ninguno propio de F0. Queda en F1, como pregunta abierta, el piso
+  de versiones por motor y la plataforma cubierta (su PREGUNTA-H): el humano
+  no dio números y declinó elegirlos, así que sigue sin responder y no se
+  rellena por suposición.
 ```
