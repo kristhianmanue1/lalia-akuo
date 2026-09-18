@@ -57,7 +57,7 @@ del mismo día a las preguntas que el F0 dejó abiertas.
 | P0-7 | Persistencia | Ninguna, ni la mínima; el dato previo es entrada inyectada | `ADR-007` | Análisis estático sin APIs de almacenamiento; ninguna operación del núcleo escribe estado entre sesiones |
 | P0-8 | Modelo de IA | Solo las costuras; el modo asistido se activa por configuración explícita | `ADR-008` | Todo puerto devuelve promesa, acepta cancelación y declara presupuesto; los contadores y umbrales no son alcanzables desde un puerto |
 | P0-9 | Navegadores objetivo | Safari, Chrome y Edge: tres navegadores, dos motores | `ADR-009` | Cada parche obligatorio tiene su prueba, de modo que quitarlo ponga una prueba en rojo; la matriz se organiza por motor |
-| P0-10 | Distribución y consumo | El primer consumidor copia mientras madura, con revisión estimada a 3 meses; sin publicación en registro | `ADR-010` | No hay paquete publicado ni entrada en registro; cada commit copiado compila y pasa sus pruebas; la revisión está declarada como tarea con su fecha pendiente |
+| P0-10 | Distribución y consumo | El primer consumidor copia mientras madura, con revisión el 30 de diciembre de 2026; sin publicación en registro | `ADR-010` | No hay paquete publicado ni entrada en registro; cada commit copiado compila y pasa sus pruebas; la revisión está declarada como tarea con su fecha fija |
 
 Nota de lectura: P0-6, P0-8 y P0-9 tienen criterio en forma de prueba sobre el
 código; P0-3, P0-4, P0-5 y P0-10 se comprueban sobre el alcance y el contenido
@@ -71,8 +71,9 @@ haya consumidores fuera de este autor, el proyecto no publica en ningún
 registro (`ADR-010`).
 
 Durante la etapa de maduración, el primer consumidor **copia** el código, con
-una **revisión estimada a los 3 meses** para decidir si pasa a consumirlo como
-dependencia desde el repositorio. De ahí se siguen cuatro consecuencias:
+una **revisión el 30 de diciembre de 2026** —fecha fijada por el humano el
+18-sep-2026— para decidir si pasa a consumirlo como dependencia desde el
+repositorio. De ahí se siguen cuatro consecuencias:
 
 - **Una copia es una instantánea.** La superficie pública tiene que ser
   pequeña y estable por commit mientras dure esta etapa: lo copiado no se
@@ -81,18 +82,16 @@ dependencia desde el repositorio. De ahí se siguen cuatro consecuencias:
 - **No hay resolución automática de versiones.** Un cambio incompatible en
   esta etapa no lo detecta ningún gestor de paquetes: rompe al consumidor que
   copió, y se documenta con guía de migración (estándar §5.5) cuando ocurra.
-- **La revisión de los 3 meses es una tarea con fecha, no una intención.** Su
-  fecha exacta queda pendiente de declarar (PREGUNTA-I); es la que abre el
-  segundo tramo: dependencia desde el repositorio, versionado semántico
-  público y guía de migración.
+- **La revisión es una tarea con fecha, no una intención**: el 30 de diciembre
+  de 2026, que abre el segundo tramo: dependencia desde el repositorio,
+  versionado semántico público y guía de migración.
 - **El «paquete» de idioma es un módulo del repositorio**, con interfaz
   estable (cierra PREGUNTA-C).
 
 `REQ-15` exige el consumo desde el repositorio sin publicación en registro.
 La lectura de este documento es que el modo vigente durante la maduración es
 la copia de ese repositorio, y que el criterio de aceptación de REQ-15 —un
-consumidor externo lo instala desde el repositorio— rige desde la revisión de
-los 3 meses.
+consumidor externo lo instala desde el repositorio— rige desde esa revisión.
 
 ## 9. No decisiones, no objetivos y excluido
 
@@ -221,18 +220,18 @@ PREGUNTA-H: ¿Qué versiones mínimas, por motor, y qué plataforma —móvil,
   de la matriz de pruebas y qué compatibilidad se puede declarar. El F0
   esperaba que F1 fijara las versiones, y F1 no tiene evidencia para elegir
   números ni plataformas que el humano no nombró.
+  Estado: el humano la respondió «versiones mínimas» el 18-sep-2026 **sin
+  dar números ni plataforma**, y al pedírselos explícitamente declinó
+  elegir. Se deja abierta tal cual: convertir esa respuesta en un número
+  sería inventar, y dar por elegida la recomendación sería atribuirle una
+  decisión que no tomó.
   Bloquea: el cierre de E3 y cualquier declaración pública de compatibilidad.
   Recomendación: fijar el piso con la matriz medida en E3-05 como evidencia,
   nunca por presencia de API ni por «versiones vigentes» supuestas.
-
-PREGUNTA-I: ¿Cuál es la fecha exacta de la revisión estimada a 3 meses?
-  Por qué importa: esa revisión decide si el primer consumidor pasa de copiar
-  el repositorio a consumirlo como dependencia, y con ese paso se abren el
-  versionado semántico público y la guía de migración.
-  Bloquea: el segundo tramo de `ADR-010`; no bloquea el trabajo del núcleo.
-  Recomendación: fijarla al abrir la etapa de publicación, no antes: la
-  revisión se mide desde que exista algo útil que copiar.
 ```
+
+`PREGUNTA-I` quedó cerrada: el humano fijó el **30 de diciembre de 2026** como
+fecha de la revisión (registrada en `ADR-010` y en §8.1).
 
 ### 9.4 Pendientes de fase
 
@@ -270,7 +269,7 @@ introduce requisitos ausentes del F0.
 | REQ-12 paquetes de idioma | §6, `ADR-006` | E3-04 |
 | REQ-13 puertos sin modelo | §5, `ADR-008` | E2-05, E2-06 |
 | REQ-14 canal y MCP fuera | §7, P0-3 a P0-5 | E5-03, posterior a la primera versión |
-| REQ-15 Apache-2.0, consumo desde el repositorio sin registro | §8.1, `ADR-002`, `ADR-010` | E6-01, E6-03; el tramo por dependencia se abre en la revisión de los 3 meses |
+| REQ-15 Apache-2.0, consumo desde el repositorio sin registro | §8.1, `ADR-002`, `ADR-010` | E6-01, E6-03; el tramo por dependencia se abre el 30 de diciembre de 2026 |
 | REQ-16 accesibilidad | §4.2, §4.7 | E1 accesibilidad; E4-03, E4-04 |
 | REQ-17 el agente no se salta la validación | §7.2 | E1 protocolo; E5-01 |
 | REQ-18 navegadores objetivo y parches obligatorios | §3.3, `ADR-009` | E3-02 —una prueba por parche— y E3-05 |

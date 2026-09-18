@@ -23,8 +23,8 @@ abre la puerta a la divergencia.
 ## Decisión
 
 - El primer consumidor **copia** el código mientras el proyecto madura, con
-  una **revisión estimada a los 3 meses** para decidir si pasa a consumirlo
-  como dependencia desde el repositorio.
+  una **revisión el 30 de diciembre de 2026** para decidir si pasa a
+  consumirlo como dependencia desde el repositorio.
 - Mientras no haya consumidores fuera de este autor, **no se publica en
   ningún registro de paquetes**.
 
@@ -50,11 +50,11 @@ abre la puerta a la divergencia.
 - **No hay resolución automática de versiones.** Un cambio incompatible en
   esta etapa no lo detecta ningún gestor de paquetes: rompe al consumidor que
   copió. Se documenta con guía de migración (estándar §5.5) cuando ocurra.
-- **La revisión de los 3 meses es una tarea con fecha, no una intención.** Su
-  fecha exacta queda pendiente de declarar
-  (`docs/product/definicion-tecnica.md` §9.3, PREGUNTA-I); es la que abre el
-  segundo tramo: dependencia desde el repositorio, versionado semántico
-  público y guía de migración.
+- **La revisión de los 3 meses es una tarea con fecha, no una intención.** La
+  fecha la fijó el humano el 18-sep-2026: **30 de diciembre de 2026**. Es la
+  que abre el segundo tramo: dependencia desde el repositorio, versionado
+  semántico público y guía de migración. Hasta esa fecha el modo vigente es
+  la copia.
 - **No nace todavía la obligación de versionado semántico público**, porque no
   hay release que publicar; cuando los haya, el estándar §5.5 sigue rigiendo
   para ellos.
@@ -67,5 +67,5 @@ abre la puerta a la divergencia.
   a evitar.
 - **El consumo sigue siendo desde el repositorio**, como exige `REQ-15`: el
   modo vigente durante la maduración es la copia, y el criterio de un
-  consumidor que lo instala desde el repositorio rige desde la revisión de los
-  3 meses.
+  consumidor que lo instala desde el repositorio rige desde la revisión del
+  30 de diciembre de 2026.
