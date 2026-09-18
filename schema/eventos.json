@@ -1,0 +1,159 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lalia-akuo/events/v0",
+  "title": "lalia-akuo - catalogo de eventos de sesion v0",
+  "description": "Contrato de lo que un consumidor puede observar y auditar. Cada evento es una de las variantes de 'oneOf'; la sesion nunca emite un tipo fuera de este catalogo. El contrato completo vive en docs/specs/SPEC-001-contrato-del-nucleo.md. Todo evento lleva el sobre 'type', 'sessionId', 'mode', 'port' y 'turn'.",
+  "type": "object",
+  "oneOf": [
+    { "$ref": "#/definitions/state_changed" },
+    { "$ref": "#/definitions/text_output" },
+    { "$ref": "#/definitions/confirmation_requested" },
+    { "$ref": "#/definitions/manual_input_required" },
+    { "$ref": "#/definitions/failure" },
+    { "$ref": "#/definitions/value_confirmed" }
+  ],
+  "definitions": {
+    "mode": { "enum": ["deterministic", "assisted"] },
+    "port": {
+      "enum": [
+        "speaker",
+        "listener",
+        "fieldInterpreter",
+        "controlInterpreter",
+        "phrases",
+        "proposer",
+        null
+      ]
+    },
+    "turn": { "type": ["integer", "null"], "minimum": 1 },
+    "state": { "enum": ["idle", "listening", "thinking", "speaking", "error"] },
+    "code": {
+      "enum": [
+        "speech_failed",
+        "speech_watchdog",
+        "no_speech",
+        "recognition_failed",
+        "unresolved_value",
+        "unclassified_control",
+        "port_failure",
+        "port_budget_exhausted",
+        "missing_text",
+        "over_budget",
+        "missing_policy",
+        "invalid_agent_text"
+      ]
+    },
+    "manualReason": {
+      "enum": [
+        "no_speech",
+        "recognition_failed",
+        "speech_failed",
+        "speech_watchdog",
+        "port_failure",
+        "port_budget_exhausted"
+      ]
+    },
+    "sessionId": { "type": "string", "minLength": 1 },
+    "text": { "type": "string", "minLength": 1 },
+    "state_changed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "sessionId", "mode", "port", "turn", "state", "phase"],
+      "properties": {
+        "type": { "const": "state_changed" },
+        "sessionId": { "$ref": "#/definitions/sessionId" },
+        "mode": { "$ref": "#/definitions/mode" },
+        "port": { "$ref": "#/definitions/port" },
+        "turn": { "$ref": "#/definitions/turn" },
+        "state": { "$ref": "#/definitions/state" },
+        "phase": {
+          "enum": ["idle", "asking", "capturing", "interpreting", "confirming", "closing", "degrading", "failed"],
+          "description": "Fase interna cerrada de SPEC-005; nunca null."
+        }
+      }
+    },
+    "text_output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "sessionId", "mode", "port", "turn", "key", "fieldId", "displayText", "speechText"],
+      "properties": {
+        "type": { "const": "text_output" },
+        "sessionId": { "$ref": "#/definitions/sessionId" },
+        "mode": { "$ref": "#/definitions/mode" },
+        "port": { "$ref": "#/definitions/port" },
+        "turn": { "$ref": "#/definitions/turn" },
+        "key": { "type": ["string", "null"] },
+        "fieldId": { "type": ["string", "null"] },
+        "displayText": { "$ref": "#/definitions/text" },
+        "speechText": { "type": ["string", "null"], "minLength": 1 }
+      }
+    },
+    "confirmation_requested": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "sessionId", "mode", "port", "turn", "fieldId", "value", "unit", "spokenValue", "displayText", "speechText"],
+      "properties": {
+        "type": { "const": "confirmation_requested" },
+        "sessionId": { "$ref": "#/definitions/sessionId" },
+        "mode": { "$ref": "#/definitions/mode" },
+        "port": { "$ref": "#/definitions/port" },
+        "turn": { "$ref": "#/definitions/turn" },
+        "fieldId": { "$ref": "#/definitions/sessionId" },
+        "value": { "type": ["number", "integer", "boolean", "string"] },
+        "unit": { "type": ["string", "null"] },
+        "spokenValue": { "$ref": "#/definitions/text" },
+        "displayText": { "$ref": "#/definitions/text" },
+        "speechText": { "type": ["string", "null"], "minLength": 1 }
+      }
+    },
+    "manual_input_required": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "sessionId", "mode", "port", "turn", "reason", "fieldId", "displayText", "speechText"],
+      "properties": {
+        "type": { "const": "manual_input_required" },
+        "sessionId": { "$ref": "#/definitions/sessionId" },
+        "mode": { "$ref": "#/definitions/mode" },
+        "port": { "$ref": "#/definitions/port" },
+        "turn": { "$ref": "#/definitions/turn" },
+        "reason": { "$ref": "#/definitions/manualReason" },
+        "fieldId": { "type": ["string", "null"] },
+        "displayText": { "$ref": "#/definitions/text" },
+        "speechText": { "type": ["string", "null"], "minLength": 1 }
+      }
+    },
+    "failure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "sessionId", "mode", "port", "turn", "code", "state", "fallback", "displayText", "speechText"],
+      "properties": {
+        "type": { "const": "failure" },
+        "sessionId": { "$ref": "#/definitions/sessionId" },
+        "mode": { "$ref": "#/definitions/mode" },
+        "port": { "$ref": "#/definitions/port" },
+        "turn": { "$ref": "#/definitions/turn" },
+        "code": { "$ref": "#/definitions/code" },
+        "state": { "$ref": "#/definitions/state" },
+        "fallback": { "enum": ["deterministic", null] },
+        "displayText": { "$ref": "#/definitions/text" },
+        "speechText": { "type": ["string", "null"], "minLength": 1 }
+      }
+    },
+    "value_confirmed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "sessionId", "mode", "port", "turn", "fieldId", "value", "unit", "spokenValue"],
+      "properties": {
+        "type": { "const": "value_confirmed" },
+        "sessionId": { "$ref": "#/definitions/sessionId" },
+        "mode": { "$ref": "#/definitions/mode" },
+        "port": { "$ref": "#/definitions/port" },
+        "turn": { "$ref": "#/definitions/turn" },
+        "fieldId": { "$ref": "#/definitions/sessionId" },
+        "value": { "type": ["number", "integer", "boolean", "string"] },
+        "unit": { "type": ["string", "null"] },
+        "spokenValue": { "$ref": "#/definitions/text" }
+      }
+    }
+  }
+}

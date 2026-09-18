@@ -33,7 +33,7 @@ sus validaciones, no solo la de esquema:
 3. el campo corresponde al paso activo;
 4. un candidato pasa analizador, tipo, precisión y rango;
 5. el texto pasa el filtro que el consumidor haya declarado;
-6. `safety_class` obra como compuerta: una clase bloqueada no se habla;
+6. `safetyClass` obra como compuerta: una clase bloqueada no se habla;
 7. toda transición sensible exige confirmación explícita.
 
 Propiedades de la frontera:

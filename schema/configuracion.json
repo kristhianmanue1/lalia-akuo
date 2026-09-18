@@ -1,0 +1,151 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lalia-akuo/config/v0",
+  "title": "lalia-akuo - configuracion de la sesion de voz v0",
+  "description": "Configuracion que declara el consumidor. El contrato completo vive en docs/specs/SPEC-001-contrato-del-nucleo.md. Las claves 'ports', 'onEvent' y 'getPreviousValue' son inyeccion en tiempo de ejecucion, no expresable en JSON: se admiten como claves declaradas y el nucleo las valida como objeto o funcion en la frontera. Restricciones que este esquema no expresa y el nucleo valida: 'range' solo aplica a 'number' e 'integer', y exige min <= max.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["fields", "language", "policy"],
+  "properties": {
+    "fields": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/field" }
+    },
+    "language": { "$ref": "#/definitions/language" },
+    "policy": { "$ref": "#/definitions/policy" },
+    "mode": {
+      "enum": ["deterministic", "assisted"],
+      "default": "deterministic",
+      "description": "Determinista por omision; 'assisted' solo por configuracion explicita."
+    },
+    "ports": {
+      "description": "Inyeccion en tiempo de ejecucion: speaker, listener, fieldInterpreter, controlInterpreter, phrases, proposer. Su contrato de metodo se fija en docs/specs/SPEC-004-puertos-y-presupuestos.md."
+    },
+    "onEvent": {
+      "description": "Inyeccion en tiempo de ejecucion: destino de eventos, una funcion."
+    },
+    "getPreviousValue": {
+      "description": "Inyeccion en tiempo de ejecucion: valor previo inyectado, una funcion."
+    }
+  },
+  "definitions": {
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "promptKey"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["number", "integer", "boolean", "text"] },
+        "range": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["min", "max"],
+          "properties": {
+            "min": { "type": "number" },
+            "max": { "type": "number" }
+          }
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unidad declarada por el consumidor; el nucleo solo la transporta."
+        },
+        "promptKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Clave del catalogo con la pregunta; nunca texto literal."
+        },
+        "deltaPolicy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["maxDifference", "onExceeded"],
+          "properties": {
+            "maxDifference": { "type": "number", "minimum": 0 },
+            "onExceeded": { "enum": ["none", "reconfirm"] }
+          }
+        }
+      }
+    },
+    "language": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pack"],
+      "properties": {
+        "pack": { "$ref": "#/definitions/pack" },
+        "fallback": { "$ref": "#/definitions/pack" }
+      }
+    },
+    "pack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["language", "texts"],
+      "properties": {
+        "language": { "type": "string", "minLength": 1 },
+        "texts": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "type": "string" }
+        },
+        "budget": {
+          "description": "Presupuesto de lectura. Opcional: si falta, rige el de omision del nucleo, que es finito.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "maxCharacters": { "type": "integer", "minimum": 1 },
+            "maxWords": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["degradation"],
+      "properties": {
+        "degradation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["noticeKey"],
+          "properties": {
+            "noticeKey": { "type": "string", "minLength": 1 },
+            "maxConsecutiveFailures": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Fallos consecutivos del mismo paso antes de degradar a la entrada manual; entero positivo finito, ausente = 1 (fail-closed)."
+            }
+          }
+        },
+        "confirmation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "maxAttempts": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Intentos del mismo paso, incluida la repregunta, antes de degradar a la entrada manual; entero positivo finito, ausente = 1 (fail-closed)."
+            }
+          }
+        },
+        "blockedClasses": {
+          "type": "array",
+          "items": { "enum": ["form", "conversational"] },
+          "description": "Clases que cierran la compuerta. El enumerado es vocabulario del nucleo, no politica del consumidor (docs/specs/SPEC-006-politica-declarada-y-compuerta.md): un miembro fuera de el es invalid_config, nunca una compuerta abierta en silencio."
+        },
+        "safeTextKey": { "type": "string", "minLength": 1 },
+        "immutableTextKeys": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "filter": {
+          "type": "object",
+          "description": "Punto de declaracion de que se filtra; el contenido lo fija el consumidor y su evaluacion llega con el canal de agente."
+        },
+        "data": {
+          "type": "object",
+          "description": "Punto de declaracion de que sale, a quien y con que retencion; el contenido lo fija el consumidor."
+        }
+      }
+    }
+  }
+}

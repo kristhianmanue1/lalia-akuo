@@ -120,9 +120,11 @@ consumidor externo lo instala desde el repositorio— rige desde esa revisión.
 
 ### 9.3 Preguntas cerradas por derivación y preguntas abiertas
 
-De las siete preguntas que este documento dejó abiertas, **siete se cierran
-por derivación**: una regla ya escrita las responde, así que no son decisiones
-para el humano. Quedan **dos abiertas**, al final de esta sección.
+De las preguntas que este documento dejó abiertas, **siete se cierran por
+derivación** —una regla ya escrita las responde, así que no eran decisiones
+para el humano— y **dos las respondió el humano** el 18-sep-2026: la
+plataforma cubierta y la fecha de la revisión de la copia. Queda **una
+abierta**, al final de esta sección: el piso de versiones por motor.
 
 #### Cerradas por derivación
 
@@ -136,7 +138,7 @@ A. Política ausente: ¿qué hace el núcleo cuando el consumidor no declara
    §4.1.
    Cierre: lo que el consumidor no declara no se habla. Sin política
    declarada, el camino de texto conversacional queda cerrado, y un paso que
-   exige la declaración y no la tiene termina en `configuracion_invalida`: la
+   exige la declaración y no la tiene termina en `invalid_config`: la
    sesión no se crea.
    Consecuencia: la configuración mínima es obligatoria; un consumidor que no
    declare nada obtiene texto de formulario y ningún texto conversacional.
@@ -209,6 +211,10 @@ G. Umbrales de la política de confirmación: ¿mecanismo fijo o declaración de
    lo que el núcleo fija por su cuenta.
    Nota: `alubia:PROP-005 §7.4` proponía fijar cifras concretas en el núcleo;
    REQ-10 y AGENTS.md son de este repositorio y mandan sobre la procedencia.
+   Resuelta en: `SPEC-001` (`config.policy.confirmation.maxAttempts` y
+   `config.policy.degradation.maxConsecutiveFailures`) y en
+   `schema/configuracion.json`; el núcleo sólo garantiza el contador finito y
+   la salida declarada.
 ```
 
 #### Abiertas
@@ -285,12 +291,13 @@ Checklist del gate, con su estado real:
 - [x] decisiones con alternativas registradas en ADR: las diez P0;
 - [x] componentes con frontera externa con contrato: núcleo, eventos,
       puertos, catálogo, política declarada, protocolo de agente;
-- [x] máquina de estados definida: estados visibles y reglas de transición,
-      con la enumeración de fases internas delegada a E1;
+- [x] máquina de estados definida: estados visibles y las ocho fases
+      internas, fijadas en `docs/specs/SPEC-005-maquina-de-estados-y-fases.md`;
 - [x] todo `REQ` imprescindible con sección responsable y prueba prevista:
       §10;
-- [ ] todo `REQ` imprescindible cubierto por una spec con casos testables:
-      las spec son entregables de E1, todavía sin escribir;
+- [x] todo `REQ` imprescindible cubierto por una spec con casos testables:
+      las once spec de E1 están escritas en `docs/specs/`; E1 aún no está
+      implementada;
 - [x] ninguna sección introduce requisitos ausentes de F0: §10 lo traza.
 
 **Partición registrada.** El conjunto nace de partir un documento único de 794
@@ -299,6 +306,7 @@ y por audiencia. Los contratos y las decisiones se movieron sin reescribirse;
 los conteos por archivo de este conjunto sustituyen al conteo único anterior
 (§3.4, «al partir un archivo ya verificado»).
 
-**Fase F1: PARCIAL.** Faltan los entregables de E1 y las dos respuestas
-humanas que pide §9.3; ninguna sección de este conjunto autoriza escribir
-código.
+**Fase F1: PARCIAL.** Las once spec de E1 están escritas en `docs/specs/`,
+con casos testables, y **no** implementadas; sigue abierta la pregunta del
+piso de versiones (§9.3, PREGUNTA-H). Ninguna sección de este conjunto
+autoriza todavía escribir código de implementación.

@@ -14,7 +14,7 @@ otro.
 
 ### 5.1 Qué queda abierto hoy
 
-El modo `determinista` está implementado por completo. El modo `asistido`
+El modo `deterministic` está implementado por completo. El modo `assisted`
 existe como **costura**: los puntos donde un modelo entraría sin cambiar la
 forma del núcleo. Nada del modo asistido se documenta como estable para
 terceros antes de medir la latencia que añade.
@@ -23,9 +23,9 @@ terceros antes de medir la latencia que añade.
 
 Un modelo puede sustituir **implementaciones de puerto**, y solo esas:
 
-- el **Propositor**, que elige entre las decisiones que el núcleo ya declaró
+- el **`proposer`**, que elige entre las decisiones que el núcleo ya declaró
   admisibles;
-- los **interpretadores**, de campo y de control;
+- los **`fieldInterpreter`** y **`controlInterpreter`**;
 - el **redactor** de los textos que el catálogo marca como generables.
 
 No entra en: la disciplina de turno, los contadores y umbrales, el conjunto
