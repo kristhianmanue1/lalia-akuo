@@ -4,9 +4,10 @@
 **Cubre:** `REQ-18`.
 **Procedencia:** `../product/definicion-tecnica-frontera.md` §3.2 y §3.3;
 `../product/definicion-tecnica-nucleo.md` §4.3, §4.6, §4.7 y §4.9;
-`../product/definicion-tecnica.md` §8 (P0-8 y P0-9) y §9.3 (PREGUNTA-H);
+`../product/definicion-tecnica.md` §8 (P0-8 y P0-9) y §9.3 (PREGUNTA-H,
+cerrada);
 `../product/plan.md` §5.2 (`REQ-18`) y §8 (RESPUESTA-1);
-`../adr/ADR-009-browser-targets.md`.
+`../adr/ADR-009-browser-targets.md`; `../adr/ADR-011-compatibility-window.md`.
 **Depende de:** [`SPEC-001`](SPEC-001-contrato-del-nucleo.md) —nombres de
 los puertos, `request` y vocabulario—,
 [`SPEC-002`](SPEC-002-disciplina-de-turno.md) —no-op de un resultado tardío
@@ -45,13 +46,21 @@ Chromium/Blink (`ADR-009`). Un parche se escribe **por motor**: lo que sirve
 a Blink sirve a los dos navegadores que lo comparten y no se duplica. La
 matriz de pruebas se organiza por motor, con los tres navegadores como casos.
 
-**Sin números de versión.** La pregunta del piso de versiones sigue abierta
-por decisión humana (`../product/definicion-tecnica.md` §9.3, PREGUNTA-H) y
-no se rellena por suposición. En consecuencia, el adaptador **no ramifica
+**Sin números de versión.** El piso de versiones no se decide por lista, sino
+por una **ventana de tiempo** (`../adr/ADR-011-compatibility-window.md`): un
+motor entra en el objetivo si su primera versión estable se publicó dentro de
+los cuatro años anteriores a la fecha de publicación, con los números
+derivados y anotados en cada publicación. Por eso el adaptador **no ramifica
 por versión de navegador ni por cadena de agente de usuario**: selecciona sus
 parches por **capacidad observada** en el entorno, y cada parche se describe
-por su síntoma y su condición de disparo. Declarar compatibilidad es otra
-decisión, y la hará la matriz medida.
+por su síntoma y su condición de disparo.
+
+**La ventana no alarga la lista de parches.** Los catorce parches de esta
+spec se fijan por **síntoma y condición**, nunca por versión. La ventana puede
+**recortar** esa lista cuando la medición demuestre que un motor ya no está
+en el objetivo, y **nunca alargarla por suposición**. No bloquea ninguna
+etapa. Declarar compatibilidad es otra cosa y la hará la matriz medida;
+cuando la haya, la declaración llevará siempre su estado de medición.
 
 **Superficie del motor inyectada.** El adaptador recibe la superficie del
 motor como entrada (`voiceEngine`), y usa los objetos globales del navegador

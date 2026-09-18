@@ -184,10 +184,19 @@ opcional: Safari es objetivo declarado.
 plataforma que los motivó está dentro del alcance— y la matriz cubre los tres
 navegadores en las dos plataformas, organizada por motor.
 
-**Sin decidir**, y por eso abierto en `definicion-tecnica.md` §9.3
-(PREGUNTA-H):
+**Las versiones mínimas se deciden por política, no por lista.** La
+compatibilidad se define por una **ventana de tiempo** (decisión humana del
+18-sep-2026, `ADR-011`): un motor entra en el objetivo si su primera versión
+estable se publicó dentro de los cuatro años anteriores a la fecha de
+publicación, y los números que la ventana implica en cada fecha se derivan y
+anotan en cada publicación, como consecuencia de la política y con la fecha
+de derivación. Así nadie tiene que saberse versiones y el piso no se queda
+obsoleto.
 
-- las **versiones mínimas** de cada motor. El humano eligió navegadores y
-  plataformas, no números de versión, y este documento no inventa ninguno; sin
-  ese piso no se puede cerrar la lista de parches obligatorios ni declarar
-  compatibilidad.
+**La política no bloquea nada.** Ninguna etapa la espera: no bloquea el
+cierre de E3, ni la implementación, ni la publicación. La lista de parches de
+`SPEC-011` se fija por **síntoma y condición**, no por versión: la ventana
+puede **recortarla** cuando la medición lo demuestre y **nunca alargarla por
+suposición**. Declarar compatibilidad sigue siendo otra cosa: la declara la
+matriz medida, y esa declaración lleva siempre su estado de medición —qué se
+ha medido y qué no—, nunca una afirmación sin medir.

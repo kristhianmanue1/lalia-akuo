@@ -91,9 +91,15 @@ bloquea.
   `notice.offDeviceAudio`, lo que bloquea la resolución de textos de
   `SPEC-009`. Está enumerado en `SPEC-007`; implementarlo es de la etapa
   siguiente.
-- **El piso de versiones de navegador sigue sin decidirse** (pregunta abierta
-  del humano). Por eso `SPEC-011` fija los parches por **síntoma y condición**
-  y nunca por número de versión, y por eso no se declara compatibilidad.
+- **La ventana de compatibilidad está declarada; su medición, todavía no.** El
+  piso de versiones de navegador se define por una **ventana de tiempo** —un
+  motor entra en el objetivo si su primera versión estable se publicó dentro
+  de los cuatro años anteriores a la fecha de publicación—, con los números
+  derivados y anotados en cada publicación
+  (`../adr/ADR-011-compatibility-window.md`). No bloquea ninguna etapa. Lo que
+  falta es la medición: por eso `SPEC-011` fija los parches por **síntoma y
+  condición** y nunca por número de versión, y la compatibilidad no se declara
+  sin su estado de medición.
 - **El valor del tope de locución y el del presupuesto por turno son
   provisionales.** Los fija `SPEC-003` y `SPEC-004` con su razón, y la
   medición en dispositivo los puede cambiar sin cambiar el contrato. Fíjarlos
