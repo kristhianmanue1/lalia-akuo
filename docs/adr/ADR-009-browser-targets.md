@@ -57,5 +57,10 @@ modo que quitarlo ponga una prueba en rojo (`REQ-18`).
   mínimas** de cada motor. F1 no tiene evidencia para elegir números; el piso
   se fija con la matriz medida (`E3-05`), y hasta entonces no se declara
   compatibilidad.
+- **Las versiones mínimas las resuelve `ADR-011`**, que sustituye la búsqueda
+  de números por una **ventana de tiempo** —un motor entra en el objetivo si
+  su primera versión estable se publicó dentro de los cuatro años anteriores
+  a la fecha de publicación—, con el piso derivado en cada publicación y sin
+  bloquear ninguna etapa. Lo demás de este ADR no cambia.
 - Declarar un navegador objetivo **no** declara compatibilidad: eso lo hará la
   matriz medida, navegador por navegador y con su registro de evidencia.

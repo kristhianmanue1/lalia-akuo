@@ -7,8 +7,10 @@ y su §8 las decisiones humanas del 18-sep-2026). **Salida:** lo que F2 y F3
 deben respetar. Las secciones §1-§7 viven en los documentos del mapa; éste es
 el documento de entrada del conjunto.
 
-**Estado:** diseño cerrado con las **diez decisiones P0** de §8. No autoriza
-implementación: no se escribe código antes de cerrar E1 (§11).
+**Estado:** diseño cerrado con las **diez decisiones P0** de §8. F1 cierra
+en `OK`: las spec de E1 están escritas. La implementación es la etapa
+siguiente y arranca por su propio orden —el núcleo, contra los casos de
+`SPEC-001`, `SPEC-002` y `SPEC-003`—, no por este documento.
 
 **Convención de citas.** `alubia:<documento>` designa un documento del
 repositorio externo del proyecto alubia; no es una ruta de este repositorio ni
@@ -25,7 +27,7 @@ en su encabezado.
 
 | Documento | Secciones | Contiene | Cuándo leerlo |
 |---|---|---|---|
-| **este** (`definicion-tecnica.md`) | §8-§11 | decisiones P0 con su criterio de prueba, alcance excluido, preguntas cerradas y abiertas, trazabilidad con el F0 y gate | siempre: es la entrada |
+| **este** (`definicion-tecnica.md`) | §8-§11 | decisiones P0 con su criterio de prueba, alcance excluido, preguntas cerradas por derivación y por decisión humana, trazabilidad con el F0 y gate | siempre: es la entrada |
 | [`definicion-tecnica-frontera.md`](definicion-tecnica-frontera.md) | §1-§3 | qué es la biblioteca, la frontera mecanismo/política, las capas y los navegadores objetivo | antes de leer cualquier contrato |
 | [`definicion-tecnica-nucleo.md`](definicion-tecnica-nucleo.md) | §4 | contratos del núcleo: entradas, salidas, puertos, catálogo de textos, política declarada, errores, estado y garantías | al diseñar o implementar el núcleo |
 | [`definicion-tecnica-extensiones.md`](definicion-tecnica-extensiones.md) | §5-§6 | punto de extensión para un modelo de IA y paquetes de idioma | al tocar puertos, redacción o idiomas |
@@ -56,7 +58,7 @@ del mismo día a las preguntas que el F0 dejó abiertas.
 | P0-6 | Idiomas | Español primero, inglés después, con el mecanismo desde el día uno | `ADR-006` | El núcleo se prueba con un paquete de idioma de sustitución sin modificarse; la primera versión publica un solo paquete |
 | P0-7 | Persistencia | Ninguna, ni la mínima; el dato previo es entrada inyectada | `ADR-007` | Análisis estático sin APIs de almacenamiento; ninguna operación del núcleo escribe estado entre sesiones |
 | P0-8 | Modelo de IA | Solo las costuras; el modo asistido se activa por configuración explícita | `ADR-008` | Todo puerto devuelve promesa, acepta cancelación y declara presupuesto; los contadores y umbrales no son alcanzables desde un puerto |
-| P0-9 | Navegadores y plataformas objetivo | Safari, Chrome y Edge en móvil y escritorio: tres navegadores, dos motores, dos plataformas | `ADR-009` | Cada parche obligatorio tiene su prueba, de modo que quitarlo ponga una prueba en rojo; la matriz se organiza por motor y cubre las dos plataformas |
+| P0-9 | Navegadores y plataformas objetivo | Safari, Chrome y Edge en móvil y escritorio: tres navegadores, dos motores, dos plataformas. La ventana de compatibilidad no es una lista de versiones | `ADR-009`, `ADR-011` | Cada parche obligatorio tiene su prueba, de modo que quitarlo ponga una prueba en rojo; la matriz se organiza por motor y cubre las dos plataformas |
 | P0-10 | Distribución y consumo | El primer consumidor copia mientras madura, con revisión el 30 de diciembre de 2026; sin publicación en registro | `ADR-010` | No hay paquete publicado ni entrada en registro; cada commit copiado compila y pasa sus pruebas; la revisión está declarada como tarea con su fecha fija |
 
 Nota de lectura: P0-6, P0-8 y P0-9 tienen criterio en forma de prueba sobre el
@@ -118,13 +120,13 @@ consumidor externo lo instala desde el repositorio— rige desde esa revisión.
   cambiar la forma del puerto de locución y el camino de agregación del
   núcleo. Se reconoce el coste de no hacerlo.
 
-### 9.3 Preguntas cerradas por derivación y preguntas abiertas
+### 9.3 Preguntas cerradas por derivación y por decisión humana
 
 De las preguntas que este documento dejó abiertas, **siete se cierran por
 derivación** —una regla ya escrita las responde, así que no eran decisiones
-para el humano— y **dos las respondió el humano** el 18-sep-2026: la
-plataforma cubierta y la fecha de la revisión de la copia. Queda **una
-abierta**, al final de esta sección: el piso de versiones por motor.
+para el humano— y **tres las respondió el humano** el 18-sep-2026: la
+plataforma cubierta, la fecha de la revisión de la copia y el criterio de
+compatibilidad. **No queda ninguna abierta.**
 
 #### Cerradas por derivación
 
@@ -217,23 +219,23 @@ G. Umbrales de la política de confirmación: ¿mecanismo fijo o declaración de
    la salida declarada.
 ```
 
-#### Abiertas
+#### Cerradas por decisión humana
 
 ```text
-PREGUNTA-H: ¿Qué **versión mínima** se declara soportada por motor (WebKit y
+PREGUNTA-H: ¿Qué versión mínima se declara soportada por motor (WebKit y
   Blink)?
-  Por qué importa: fija qué parches de plataforma son obligatorios, el tamaño
-  de la matriz de pruebas y qué compatibilidad se puede declarar. El F0
-  esperaba que F1 fijara las versiones, y F1 no tiene evidencia para elegir
-  números.
-  Estado: la parte de **plataforma** quedó decidida por el humano el
-  18-sep-2026 —**móvil y escritorio**— y ya no es pregunta; queda sólo el piso
-  de versiones, que el humano no dio y declinó elegir al pedírselo. Se deja
-  abierta tal cual: convertirlo en un número sería inventar, y dar por elegida
-  la recomendación sería atribuirle una decisión que no tomó.
-  Bloquea: el cierre de E3 y cualquier declaración pública de compatibilidad.
-  Recomendación: fijar el piso con la matriz medida en E3-05 como evidencia,
-  nunca por presencia de API ni por «versiones vigentes» supuestas.
+  Respuesta del humano el 18-sep-2026, textual: «no sé de versiones pero
+  retrocompatible hasta 4 años sería bueno pero no quiero sea bloqueante».
+  Cierre: la compatibilidad se define por una **ventana de tiempo móvil**, no
+  por una lista de versiones: un motor entra en el objetivo si su primera
+  versión estable se publicó dentro de los cuatro años anteriores a la fecha
+  de publicación, y los números que la ventana implica se derivan y anotan en
+  cada publicación, como consecuencia de la política y con la fecha de
+  derivación. La parte de **plataforma** ya había quedado decidida el mismo
+  día —**móvil y escritorio**—.
+  No bloquea: ninguna etapa espera esta política —ni el cierre de E3, ni la
+  implementación, ni la publicación—.
+  Registrada en: `ADR-011`; allí están el detalle y las alternativas.
 ```
 
 `PREGUNTA-I` quedó cerrada: el humano fijó el **30 de diciembre de 2026** como
@@ -306,7 +308,9 @@ y por audiencia. Los contratos y las decisiones se movieron sin reescribirse;
 los conteos por archivo de este conjunto sustituyen al conteo único anterior
 (§3.4, «al partir un archivo ya verificado»).
 
-**Fase F1: PARCIAL.** Las once spec de E1 están escritas en `docs/specs/`,
-con casos testables, y **no** implementadas; sigue abierta la pregunta del
-piso de versiones (§9.3, PREGUNTA-H). Ninguna sección de este conjunto
-autoriza todavía escribir código de implementación.
+**Fase F1: OK.** Las once spec de E1 están escritas en `docs/specs/`, con
+casos testables, y **no** implementadas: la implementación es de su propia
+etapa. `§9.3` no mantiene ninguna pregunta abierta —la última, el piso de
+versiones, quedó cerrada por `ADR-011`, que no bloquea ninguna etapa—.
+Ninguna sección de este conjunto autoriza por sí sola escribir código de
+implementación.
