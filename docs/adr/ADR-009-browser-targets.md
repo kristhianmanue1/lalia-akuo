@@ -20,10 +20,10 @@ El humano eligió **navegadores**, no números de versión.
 
 ## Decisión
 
-Safari, Chrome y Edge son los navegadores objetivo. Un parche de plataforma es
-obligatorio cuando el motor que lo motivó es objetivo declarado, y cada parche
-obligatorio lleva su prueba, de modo que quitarlo ponga una prueba en rojo
-(`REQ-18`).
+Safari, Chrome y Edge son los navegadores objetivo, **en móvil y en
+escritorio**. Un parche de plataforma es obligatorio cuando el motor que lo
+motivó es objetivo declarado, y cada parche obligatorio lleva su prueba, de
+modo que quitarlo ponga una prueba en rojo (`REQ-18`).
 
 ## Alternativas descartadas
 
@@ -49,11 +49,13 @@ obligatorio lleva su prueba, de modo que quitarlo ponga una prueba en rojo
   como casos. La medición en dispositivo sigue siendo por navegador, porque el
   motor no determina qué voces ni qué red usa el dispositivo: el aviso de que
   el audio puede procesarse fuera de él sigue vigente.
-- **Queda sin decidir, y no se resuelve por supuesto:**
-  - las **versiones mínimas** de cada motor. F1 no tiene evidencia para elegir
-    números; el piso se fija con la matriz medida (`E3-05`), y hasta entonces
-    no se declara compatibilidad;
-  - la **plataforma** cubierta —móvil, escritorio o ambas—. Los parches que
-    motivan el proyecto son de WebKit móvil, y la plataforma cambia la matriz.
+- **La plataforma cubierta es móvil y escritorio**, decidida por el humano el
+  18-sep-2026. Consecuencia: los parches de WebKit móvil siguen siendo
+  obligatorios —la plataforma que los motiva está dentro— y la matriz cubre los
+  tres navegadores en las dos plataformas, por motor.
+- **Queda sin decidir, y no se resuelve por supuesto:** las **versiones
+  mínimas** de cada motor. F1 no tiene evidencia para elegir números; el piso
+  se fija con la matriz medida (`E3-05`), y hasta entonces no se declara
+  compatibilidad.
 - Declarar un navegador objetivo **no** declara compatibilidad: eso lo hará la
   matriz medida, navegador por navegador y con su registro de evidencia.

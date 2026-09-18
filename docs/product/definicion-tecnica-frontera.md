@@ -179,12 +179,15 @@ declaró, no entra en la matriz obligatoria y no se declara soportado por
 escribirlo. En los dos motores objetivo no queda ningún parche de WebKit en
 opcional: Safari es objetivo declarado.
 
+**La plataforma cubierta es móvil y escritorio**, decidida por el humano el
+18-sep-2026. Los parches de WebKit móvil siguen siendo obligatorios —la
+plataforma que los motivó está dentro del alcance— y la matriz cubre los tres
+navegadores en las dos plataformas, organizada por motor.
+
 **Sin decidir**, y por eso abierto en `definicion-tecnica.md` §9.3
 (PREGUNTA-H):
 
-- las **versiones mínimas** de cada motor. El humano eligió navegadores, no
-  números de versión, y este documento no inventa ninguno; sin ese piso no se
-  puede cerrar la lista de parches obligatorios ni declarar compatibilidad;
-- la **plataforma** cubierta —móvil, escritorio o ambas—. Los parches de
-  plataforma que motivan el proyecto se descubrieron en WebKit móvil
-  (`alubia:PROP-005 §3`), y la plataforma cambia la matriz.
+- las **versiones mínimas** de cada motor. El humano eligió navegadores y
+  plataformas, no números de versión, y este documento no inventa ninguno; sin
+  ese piso no se puede cerrar la lista de parches obligatorios ni declarar
+  compatibilidad.

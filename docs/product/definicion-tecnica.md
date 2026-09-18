@@ -56,7 +56,7 @@ del mismo día a las preguntas que el F0 dejó abiertas.
 | P0-6 | Idiomas | Español primero, inglés después, con el mecanismo desde el día uno | `ADR-006` | El núcleo se prueba con un paquete de idioma de sustitución sin modificarse; la primera versión publica un solo paquete |
 | P0-7 | Persistencia | Ninguna, ni la mínima; el dato previo es entrada inyectada | `ADR-007` | Análisis estático sin APIs de almacenamiento; ninguna operación del núcleo escribe estado entre sesiones |
 | P0-8 | Modelo de IA | Solo las costuras; el modo asistido se activa por configuración explícita | `ADR-008` | Todo puerto devuelve promesa, acepta cancelación y declara presupuesto; los contadores y umbrales no son alcanzables desde un puerto |
-| P0-9 | Navegadores objetivo | Safari, Chrome y Edge: tres navegadores, dos motores | `ADR-009` | Cada parche obligatorio tiene su prueba, de modo que quitarlo ponga una prueba en rojo; la matriz se organiza por motor |
+| P0-9 | Navegadores y plataformas objetivo | Safari, Chrome y Edge en móvil y escritorio: tres navegadores, dos motores, dos plataformas | `ADR-009` | Cada parche obligatorio tiene su prueba, de modo que quitarlo ponga una prueba en rojo; la matriz se organiza por motor y cubre las dos plataformas |
 | P0-10 | Distribución y consumo | El primer consumidor copia mientras madura, con revisión el 30 de diciembre de 2026; sin publicación en registro | `ADR-010` | No hay paquete publicado ni entrada en registro; cada commit copiado compila y pasa sus pruebas; la revisión está declarada como tarea con su fecha fija |
 
 Nota de lectura: P0-6, P0-8 y P0-9 tienen criterio en forma de prueba sobre el
@@ -214,17 +214,17 @@ G. Umbrales de la política de confirmación: ¿mecanismo fijo o declaración de
 #### Abiertas
 
 ```text
-PREGUNTA-H: ¿Qué versiones mínimas, por motor, y qué plataforma —móvil,
-  escritorio o ambas— se declaran soportadas en cada navegador objetivo?
+PREGUNTA-H: ¿Qué **versión mínima** se declara soportada por motor (WebKit y
+  Blink)?
   Por qué importa: fija qué parches de plataforma son obligatorios, el tamaño
   de la matriz de pruebas y qué compatibilidad se puede declarar. El F0
   esperaba que F1 fijara las versiones, y F1 no tiene evidencia para elegir
-  números ni plataformas que el humano no nombró.
-  Estado: el humano la respondió «versiones mínimas» el 18-sep-2026 **sin
-  dar números ni plataforma**, y al pedírselos explícitamente declinó
-  elegir. Se deja abierta tal cual: convertir esa respuesta en un número
-  sería inventar, y dar por elegida la recomendación sería atribuirle una
-  decisión que no tomó.
+  números.
+  Estado: la parte de **plataforma** quedó decidida por el humano el
+  18-sep-2026 —**móvil y escritorio**— y ya no es pregunta; queda sólo el piso
+  de versiones, que el humano no dio y declinó elegir al pedírselo. Se deja
+  abierta tal cual: convertirlo en un número sería inventar, y dar por elegida
+  la recomendación sería atribuirle una decisión que no tomó.
   Bloquea: el cierre de E3 y cualquier declaración pública de compatibilidad.
   Recomendación: fijar el piso con la matriz medida en E3-05 como evidencia,
   nunca por presencia de API ni por «versiones vigentes» supuestas.
