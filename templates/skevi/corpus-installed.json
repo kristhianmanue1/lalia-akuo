@@ -1,0 +1,17 @@
+{
+  "schema": "skevi/corpus-install/v1",
+  "version": "corpus/v3",
+  "files": {
+    "estandar-diseno-software-github.md": "sha256:<digest-en-docs/MANIFEST-fuente>",
+    "ai-agent-guide/00-INDICE.md": "sha256:<digest-en-docs/MANIFEST-fuente>",
+    "ai-agent-guide/01-analisis-y-requerimientos.md": "sha256:<digest-en-docs/MANIFEST-fuente>",
+    "ai-agent-guide/02-specs-adr-contratos.md": "sha256:<digest-en-docs/MANIFEST-fuente>",
+    "ai-agent-guide/03-cascaron-proyecto.md": "sha256:<digest-en-docs/MANIFEST-fuente>",
+    "ai-agent-guide/04-ejecucion-y-verificacion.md": "sha256:<digest-en-docs/MANIFEST-fuente>",
+    "ai-agent-guide/05-memoria-del-agente.md": "sha256:<digest-en-docs/MANIFEST-fuente>",
+    "ai-agent-guide/06-componentes-con-llm.md": "sha256:<digest-en-docs/MANIFEST-fuente>"
+  },
+  "installed_at": "<fecha-ISO-8601-de-la-copia>",
+  "source": "<url-o-ruta-del-origen>@<sha-del-commit>",
+  "customized": []
+}

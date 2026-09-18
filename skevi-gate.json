@@ -1,0 +1,34 @@
+{
+  "root_markdown": [],
+  "exempt_paths": [
+    ".DS_Store",
+    "docs/.DS_Store"
+  ],
+  "limits": {
+    "scripts/check_sizes.py": 870
+  },
+  "required": [
+    "AGENTS.md",
+    "README.md",
+    "docs/MANIFEST.json",
+    "docs/product/plan.md",
+    "docs/estandar-diseno-software-github.md",
+    "docs/ai-agent-guide/00-INDICE.md",
+    "docs/ai-agent-guide/01-analisis-y-requerimientos.md",
+    "docs/ai-agent-guide/02-specs-adr-contratos.md",
+    "docs/ai-agent-guide/03-cascaron-proyecto.md",
+    "docs/ai-agent-guide/04-ejecucion-y-verificacion.md",
+    "docs/ai-agent-guide/05-memoria-del-agente.md",
+    "docs/ai-agent-guide/06-componentes-con-llm.md",
+    "scripts/check_sizes.py",
+    "templates/skevi/MANIFEST.json",
+    "templates/skevi/architecture-overview.md",
+    "templates/skevi/corpus-installed.json",
+    "templates/skevi/frozen-trees.md",
+    "templates/skevi/installed.json",
+    "templates/skevi/plan-de-implementacion.md",
+    "templates/skevi/registro-contexto.md",
+    "templates/skevi/scripts-installed.json",
+    "templates/skevi/usage-guide.md"
+  ]
+}
