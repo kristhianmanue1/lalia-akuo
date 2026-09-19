@@ -6,6 +6,15 @@
   "limits": {
     "scripts/check_sizes.py": 870
   },
+  "reading_path": {
+    "limit": 1100,
+    "files": [
+      "AGENTS.md",
+      "docs/ai-agent-guide/00-INDICE.md",
+      "docs/estandar-diseno-software-github.md",
+      "docs/estado.md"
+    ]
+  },
   "required": [
     "AGENTS.md",
     "README.md",

@@ -13,15 +13,23 @@ de retención: si aparece una, es un defecto de este repositorio.
 
 1. `docs/ai-agent-guide/00-INDICE.md` — **empieza aquí siempre**. Fases
    F0→F3, reglas de aplicación y formato de reporte.
-2. `docs/product/plan.md` — F0: problema, resultado observable, REQ-* y no
-   objetivos. **Es el gate de entrada: nada se construye sin cerrarlo.**
-3. `docs/product/definicion-tecnica.md` — F1: contratos del núcleo y sus
-   fronteras, cuando exista.
-4. `docs/adr/` — las decisiones aceptadas.
-5. El archivo de la fase en la que estés (`01`…`04` de
+2. `docs/estado.md` — **dónde está el proyecto y por dónde retomar**: qué
+   está implementado spec por spec, qué huecos hay declarados, qué está
+   verificado y qué no, y cuál es el siguiente paso. Lo contrasta la prueba
+   de trazabilidad, así que no puede quedarse atrás sin que la puerta lo
+   diga.
+3. `docs/product/plan.md` — F0: problema, resultado observable, `REQ-*` y
+   no objetivos. **Es el gate de entrada: nada se construye sin cerrarlo.**
+4. `docs/product/definicion-tecnica.md` — F1: contratos del núcleo y sus
+   fronteras, con sus cuatro documentos hermanos.
+5. `docs/specs/00-INDICE.md` — E1: qué fija cada spec, qué `REQ` cubre y qué
+   huecos hay. El contrato de comportamiento, caso por caso, con el
+   identificador que su prueba tiene que citar.
+6. `docs/adr/` — las decisiones aceptadas.
+7. El archivo de la fase en la que estés (`01`…`04` de
    `docs/ai-agent-guide/`); `06` sólo si un componente depende de un LLM o
    consume su salida.
-6. `docs/estandar-diseno-software-github.md` — capa normativa transversal.
+8. `docs/estandar-diseno-software-github.md` — capa normativa transversal.
    Rige en todas las fases.
 
 No asumas el contenido de un archivo que no leíste. Si un documento excede tu
