@@ -23,6 +23,9 @@ Se declaran en `skevi-gate.json`, que es la fuente que lee el gate:
 
 - límite de 870 líneas para `scripts/check_sizes.py`, que es la copia del
   gate y mide 867;
+- presupuesto de ruta de lectura en 1400 (decisión escrita 18-09-2026,
+  al activar el contrato `skevi/an-kla-integration`: absorbidas `05` y
+  `AN-KLA.md`, medida 1388);
 - exención por ruta de `.DS_Store` y de `docs/.DS_Store`;
 - `required` con los archivos canónicos de este proyecto, incluidos el
   documento F0 y los del corpus adoptado;
@@ -132,12 +135,15 @@ Sin esos dos pasos, el workflow es informativo, no un gate.
 
 ## Dependencias activas del ecosistema
 
-- **AN-KLA Memory:** no instalada. Si se instala, el contrato
-  `skevi/an-kla-integration` (guía `05` §6) hace obligatorias dos
-  lecturas más por sesión material (`05` y `AN-KLA.md`): decláralas en
-  `reading_path` de `skevi-gate.json` y sube el límite por decisión
-  escrita (ADR-021, ADR-025), p. ej. límite 1400 con `05` y `AN-KLA.md`
-  añadidas a `files`.
+- **AN-KLA Memory:** instalada (18-09-2026: `an-kla-memory` 0.1.0b28,
+  tag `v0.1.0-beta.28`). El contrato `skevi/an-kla-integration` (guía
+  `05` §6) hace obligatorias dos lecturas más por sesión material (`05`
+  y `AN-KLA.md`): declaradas en `reading_path` de `skevi-gate.json` y
+  límite subido 1100 → 1400 por decisión escrita este mismo día
+  (ADR-021, ADR-025 del canon; precedentes: issue #42 de skevi, que
+  midió el mismo hueco en otro adoptante). Margen resultante: 12 líneas
+  (ruta medida 1388); un nuevo crecimiento de la ruta exige otra
+  decisión escrita de trinquete.
 - Otras dependencias: ninguna. El gate y sus pruebas son biblioteca
   estándar de Python; la biblioteca no declara dependencias de ejecución.
 

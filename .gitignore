@@ -2,6 +2,10 @@
 __pycache__/
 *.pyc
 
+# Estado local de AN-KLA y entorno virtual de herramientas
+.an-kla/
+.venv/
+
 # Dependencias y artefactos de build
 node_modules/
 dist/
