@@ -139,9 +139,10 @@ libre.
 - **C-003-04** DADO una locución cancelada por `setMicrophoneMuted(true)`
   CUANDO el paso siguiente sería la escucha ENTONCES el paso siguiente no se
   ejecuta en ningún caso (`REQ-2`).
-- **C-003-05** DADO un `speaker` que nunca dispara el evento terminal CUANDO
-  transcurre `SPEECH_BUDGET_MS` ENTONCES el resultado es `watchdog`, el turno
-  no encadena y ninguna transición de éxito ocurre por tiempo.
+- **C-003-05** DADO un `speaker` que nunca resuelve CUANDO se agota
+  `SPEECH_BUDGET_MS` ENTONCES se emite `failure` con
+  `code = 'port_budget_exhausted'`, el turno se rehace en determinista y
+  ninguna transición de éxito ocurre por tiempo (`SPEC-004`).
 - **C-003-07** DADO el módulo del núcleo CUANDO se lee `SPEECH_BUDGET_MS`
   ENTONCES vale `20000` y es el `budgetMs` que recibe el `speaker` en su
   `request`.
@@ -161,9 +162,12 @@ libre.
 
 - Sólo `done` —el cierre real— encadena escucha.
 - `error` y `watchdog` **nunca** encadenan y siempre dejan salida declarada.
-- Ningún temporizador produce una transición de éxito; el agotamiento de
-  `SPEECH_BUDGET_MS` **con voz utilizable** produce `watchdog`, que es un
-  fallo explícito, y sin voz el resultado declarado es `error`.
+- Ningún temporizador produce una transición de éxito. `watchdog` es el
+  valor que **resuelve el adaptador** —su vigilancia venció sin evento
+  terminal, con voz utilizable—; el `budgetMs` del núcleo
+  (`SPEECH_BUDGET_MS`) agotado es `port_budget_exhausted` con redo
+  determinista (`SPEC-004`, `C-003-05`), y sin voz el resultado declarado
+  del adaptador es `error`.
 - El enumerado de resultado es cerrado; un valor fuera de él es fallo del
   puerto.
 - `SPEECH_BUDGET_MS` es un techo: el control primario de duración es el

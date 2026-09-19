@@ -73,6 +73,7 @@ createCatalog(pack, { fallback? }) → catalog
   catalog.language          etiqueta normalizada del paquete
   catalog.has(key)          → booleano
   catalog.text(key, slots)  → string
+  catalog.measure(text)     → { within: booleano, … }
   catalog.keys()            → claves del paquete, ordenadas
 interpolate(template, slots) → string
 verifyPack(pack, reference)  → { missing: string[], extra: string[] }
@@ -80,9 +81,12 @@ verifyPack(pack, reference)  → { missing: string[], extra: string[] }
 
 `createCatalog` resuelve `key` en el paquete; sólo si no está y hay
 `fallback` la resuelve en el respaldo. `interpolate` sustituye cada marca
-`{slot}` por su valor. `verifyPack` compara un paquete contra otro de
-referencia y devuelve qué claves le faltan y qué claves le sobran, sin
-lanzar.
+`{slot}` por su valor. `measure` es la frontera del presupuesto de lectura:
+`within` dice si el texto cabe y todo texto que vaya a hablarse pasa por
+ella — un texto fuera de presupuesto no se habla (`REQ-16`,
+`definicion-tecnica-nucleo.md` §4.4). `verifyPack` compara un paquete contra
+otro de referencia y devuelve qué claves le faltan y qué claves le sobran,
+sin lanzar.
 
 **Claves de la biblioteca.** La forma literal de las claves que consumen
 los componentes de la biblioteca queda fijada aquí, en una lista cerrada;
@@ -96,6 +100,10 @@ controls.textInput, controls.stateIndicator, announce.state.idle,
 announce.state.listening, announce.state.thinking, announce.state.speaking,
 announce.state.error, notice.offDeviceAudio
 ```
+
+A esta lista cerrada pertenecen, por derivación declarada en `SPEC-001`,
+las claves `<promptKey>.readback` y `<promptKey>.saved` que el núcleo
+resuelve para la confirmación y el resumen de cada campo declarado.
 
 Un paquete que no traiga una de estas claves se resuelve por
 `language.fallback` si está declarado y, si no, es `missing_text`: nunca se

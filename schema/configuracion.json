@@ -2,20 +2,33 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "lalia-akuo/config/v0",
   "title": "lalia-akuo - configuracion de la sesion de voz v0",
-  "description": "Configuracion que declara el consumidor. El contrato completo vive en docs/specs/SPEC-001-contrato-del-nucleo.md. Las claves 'ports', 'onEvent' y 'getPreviousValue' son inyeccion en tiempo de ejecucion, no expresable en JSON: se admiten como claves declaradas y el nucleo las valida como objeto o funcion en la frontera. Restricciones que este esquema no expresa y el nucleo valida: 'range' solo aplica a 'number' e 'integer', y exige min <= max.",
+  "description": "Configuracion que declara el consumidor. El contrato completo vive en docs/specs/SPEC-001-contrato-del-nucleo.md. Las claves 'ports', 'onEvent' y 'getPreviousValue' —son inyeccion en tiempo de ejecucion, no expresable en JSON. El segundo parametro 'runtime' (schedule/cancelSchedule) tampoco es clave de config y su forma cerrada vive en SPEC-001 como claves declaradas y el nucleo las valida como objeto o funcion en la frontera. Restricciones que este esquema no expresa y el nucleo valida: 'range' solo aplica a 'number' e 'integer', y exige min <= max.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["fields", "language", "policy"],
+  "required": [
+    "fields",
+    "language",
+    "policy"
+  ],
   "properties": {
     "fields": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/definitions/field" }
+      "items": {
+        "$ref": "#/definitions/field"
+      }
     },
-    "language": { "$ref": "#/definitions/language" },
-    "policy": { "$ref": "#/definitions/policy" },
+    "language": {
+      "$ref": "#/definitions/language"
+    },
+    "policy": {
+      "$ref": "#/definitions/policy"
+    },
     "mode": {
-      "enum": ["deterministic", "assisted"],
+      "enum": [
+        "deterministic",
+        "assisted"
+      ],
       "default": "deterministic",
       "description": "Determinista por omision; 'assisted' solo por configuracion explicita."
     },
@@ -33,17 +46,38 @@
     "field": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "type", "promptKey"],
+      "required": [
+        "id",
+        "type",
+        "promptKey"
+      ],
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "type": { "enum": ["number", "integer", "boolean", "text"] },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "enum": [
+            "number",
+            "integer",
+            "boolean",
+            "text"
+          ]
+        },
         "range": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["min", "max"],
+          "required": [
+            "min",
+            "max"
+          ],
           "properties": {
-            "min": { "type": "number" },
-            "max": { "type": "number" }
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            }
           }
         },
         "unit": {
@@ -59,10 +93,21 @@
         "deltaPolicy": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["maxDifference", "onExceeded"],
+          "required": [
+            "maxDifference",
+            "onExceeded"
+          ],
           "properties": {
-            "maxDifference": { "type": "number", "minimum": 0 },
-            "onExceeded": { "enum": ["none", "reconfirm"] }
+            "maxDifference": {
+              "type": "number",
+              "minimum": 0
+            },
+            "onExceeded": {
+              "enum": [
+                "none",
+                "reconfirm"
+              ]
+            }
           }
         }
       }
@@ -70,30 +115,50 @@
     "language": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["pack"],
+      "required": [
+        "pack"
+      ],
       "properties": {
-        "pack": { "$ref": "#/definitions/pack" },
-        "fallback": { "$ref": "#/definitions/pack" }
+        "pack": {
+          "$ref": "#/definitions/pack"
+        },
+        "fallback": {
+          "$ref": "#/definitions/pack"
+        }
       }
     },
     "pack": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["language", "texts"],
+      "required": [
+        "language",
+        "texts"
+      ],
       "properties": {
-        "language": { "type": "string", "minLength": 1 },
+        "language": {
+          "type": "string",
+          "minLength": 1
+        },
         "texts": {
           "type": "object",
           "minProperties": 1,
-          "additionalProperties": { "type": "string" }
+          "additionalProperties": {
+            "type": "string"
+          }
         },
         "budget": {
           "description": "Presupuesto de lectura. Opcional: si falta, rige el de omision del nucleo, que es finito.",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "maxCharacters": { "type": "integer", "minimum": 1 },
-            "maxWords": { "type": "integer", "minimum": 1 }
+            "maxCharacters": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "maxWords": {
+              "type": "integer",
+              "minimum": 1
+            }
           }
         }
       }
@@ -101,14 +166,21 @@
     "policy": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["degradation"],
+      "required": [
+        "degradation"
+      ],
       "properties": {
         "degradation": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["noticeKey"],
+          "required": [
+            "noticeKey"
+          ],
           "properties": {
-            "noticeKey": { "type": "string", "minLength": 1 },
+            "noticeKey": {
+              "type": "string",
+              "minLength": 1
+            },
             "maxConsecutiveFailures": {
               "type": "integer",
               "minimum": 1,
@@ -129,13 +201,24 @@
         },
         "blockedClasses": {
           "type": "array",
-          "items": { "enum": ["form", "conversational"] },
+          "items": {
+            "enum": [
+              "form",
+              "conversational"
+            ]
+          },
           "description": "Clases que cierran la compuerta. El enumerado es vocabulario del nucleo, no politica del consumidor (docs/specs/SPEC-006-politica-declarada-y-compuerta.md): un miembro fuera de el es invalid_config, nunca una compuerta abierta en silencio."
         },
-        "safeTextKey": { "type": "string", "minLength": 1 },
+        "safeTextKey": {
+          "type": "string",
+          "minLength": 1
+        },
         "immutableTextKeys": {
           "type": "array",
-          "items": { "type": "string", "minLength": 1 }
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         },
         "filter": {
           "type": "object",

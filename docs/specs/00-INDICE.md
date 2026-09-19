@@ -23,7 +23,7 @@ estado deja.
 
 | Spec | Qué fija | `REQ` | Casos |
 |---|---|---|---:|
-| `SPEC-001-contrato-del-nucleo.md` | Arranque de la sesión, configuración, eventos, códigos de error y la declaración de lo que el núcleo hace y no hace | 1, 6, 10, 11 | 18 |
+| `SPEC-001-contrato-del-nucleo.md` | Arranque de la sesión, configuración, eventos, códigos de error y la declaración de lo que el núcleo hace y no hace | 1, 6, 10, 11 | 20 |
 | `SPEC-002-disciplina-de-turno.md` | Token, identificador monotónico, resultado tardío, cancelado y doble callback | 3 | 12 |
 | `SPEC-003-contrato-de-locucion.md` | Las tres clases de resultado de la locución, la prohibición de encadenar sin cierre real y el tope de locución | 2 | 10 |
 | `SPEC-004-puertos-y-presupuestos.md` | Las firmas definitivas de los seis puertos, los contratos de salida y el presupuesto por turno | 4, 5, 13 | 27 |
@@ -35,7 +35,7 @@ estado deja.
 | `SPEC-010-protocolo-agente-pagina.md` | La frontera del canal de agente como contrato, con el texto de entrada como dato no confiable | 14, 17 | 17 |
 | `SPEC-011-adaptador-web-speech-y-parches.md` | El adaptador de motor y los parches obligatorios por motor, con su síntoma y su prueba | 18 | 24 |
 
-Total: **185 casos** en once spec.
+Total: **187 casos** en once spec.
 
 Los esquemas de [`../../schema/`](../../schema/) son el contrato legible por
 máquina de lo que estas spec describen en prosa: `configuracion.json` para lo

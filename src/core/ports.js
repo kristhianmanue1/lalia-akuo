@@ -48,8 +48,10 @@ export const BUDGETS = Object.freeze({
   proposer: TURN_BUDGET_MS,
 });
 
-// SPEC-004 §Degradación al agotarse: como mucho un reintento por turno. El
-// segundo agotamiento ya desemboca en `manual_input_required`.
+// SPEC-004 §Degradación al agotarse: como mucho un reintento por campo. El
+// contador es acumulativo del campo: agotado el reintento, el siguiente
+// puerto señalado desemboca en `error` · `failed` con salida manual
+// (`C-005-15`); no hay un tercer intento.
 export const PORT_RETRY_LIMIT = 1;
 
 // Contrato de `cancel()` para los seis puertos (SPEC-004 §La cancelación):

@@ -2,7 +2,7 @@
 
 **Propósito:** que una sesión nueva sepa qué está hecho, qué no, y cuál es el
 siguiente paso concreto, **sin leer la conversación de nadie**.
-**Última actualización:** 18 de septiembre de 2026.
+**Última actualización:** 19 de septiembre de 2026.
 
 Este archivo no es una promesa: lo comprueba la puerta. La prueba de
 trazabilidad (`../tests/traceability.test.js`) lee la tabla del §2 y exige que
@@ -65,23 +65,23 @@ Lo que una sesión nueva debería hacer, en este orden:
 ## 4. Huecos declarados y decisiones que hay que revisar
 
 Nada de esto se resuelve por suposición. Lo que no está cerrado, está escrito.
-**Los siete primeros puntos los declaró quien escribió el código; la ronda
-adversarial que debía juzgarlos no llegó a completarse** (§6), así que están
-reportados, no evaluados.
+**La ronda adversarial del núcleo se ejecutó el 19-09-2026 con veredicto
+`fix-and-retry` y la oleada de corrección está aplicada y verificada con
+re-ronda** (§5, §6). Los hallazgos resueltos se tachan con su fecha; los
+que quedan se declaran.
 
-- **Las claves de readback, resumen y anuncio no tienen dónde declararse.**
-  `SPEC-008` las necesita, pero `SPEC-001` cierra la configuración («una clave
-  desconocida se rechaza») y su `Field` no las tiene. La implementación
-  **deriva** `<promptKey>.readback` y `<promptKey>.saved`. Eso es una decisión
-  de la implementación, no del contrato: o se formaliza en `SPEC-001` y en el
-  esquema, o se cambia. **Es el hueco más importante que queda.**
-- **El agotamiento del `speaker` tiene dos códigos en juego.** `SPEC-003` exige
-  `watchdog` para la locución y `SPEC-004` manda `port_budget_exhausted` para
-  cualquier puerto. La implementación usa `speech_watchdog` para el `speaker` y
-  el otro para el resto; conviene unificarlo al escribir el adaptador.
-- **Cómo sale la sesión de `error`.** `SPEC-005` dice que se resuelve sola
-  (`error → idle`) y a la vez que `submitText` es la salida. La implementación
-  la deja reposar en `error` y la saca `submitText`. Hay que fijar cuál es.
+- ~~Las claves de readback, resumen y anuncio no tienen dónde declararse.~~
+  **Resuelto (19-09-2026):** la derivación `<promptKey>.readback` y
+  `<promptKey>.saved` quedó declarada en `SPEC-001` (contrato, no detalle).
+- ~~El agotamiento del `speaker` tiene dos códigos en juego.~~ **Resuelto
+  (19-09-2026):** presupuesto agotado es `port_budget_exhausted` para todo
+  puerto, con redo determinista (`C-005-12`, `C-005-13`); `speech_watchdog`
+  es sólo el valor que el adaptador resuelve (`C-003-03`). Las enunciados de
+  `C-003-05` y `C-005-13` y el invariante de `SPEC-003` quedaron enmendados
+  en la misma fecha.
+- ~~Cómo sale la sesión de `error`.~~ **Resuelto (19-09-2026):** la sesión
+  se resuelve sola `error` → `idle` · `idle` con la salida manual, y
+  `submitText` sigue siendo la salida declarada (`C-005-09`, `C-005-15`).
 - **Faltan motivos en el enumerado de `manual_input_required.reason`.**
   `SPEC-008` lo cierra a seis valores, pero `SPEC-005` hace degradar por
   lectura no resuelta, negación y control manual. La implementación mapea los
@@ -92,14 +92,12 @@ reportados, no evaluados.
   filtro declarado. La implementación resuelve pregunta, aviso, readback y
   anuncio del catálogo directo. **`phrases` y `proposer` quedan como costuras
   de `ADR-008` sin uso en la primera versión**; conviene que eso sea explícito.
-- **`createVoiceSession` recibe el planificador como segundo argumento.**
-  `turn.js` exige el reloj inyectado y la configuración de `SPEC-001` es
-  cerrada, así que los dos van separados. Está bien, pero no está en la spec.
-- **Hay un `setTimeout` en el núcleo**, como planificador **por omisión** de la
-  sesión (`src/core/session.js`). No falsifica `CAPABILITIES` —que no afirma
-  nada sobre temporizadores— y las pruebas inyectan un reloj falso, así que es
-  una omisión razonable, no una lectura del reloj escondida. Queda anotado
-  porque el resto del núcleo no lee el tiempo.
+- ~~`createVoiceSession` recibe el planificador como segundo argumento...~~
+  ~~Hay un `setTimeout` en el núcleo como planificador por omisión...~~
+  **Resuelto (19-09-2026):** `SPEC-001` declara ahora `runtime` como segundo
+  parámetro cerrado (`schedule` + `cancelSchedule` en pareja, `C-001-19`) y
+  el planificador del entorno como omisión declarada. Validación
+  fail-closed en la creación.
 - **`SPEC-009` fija los cuatro controles y los anuncios, y no hay capa de
   vista.** El núcleo no toca el DOM y no debe tocarlo: la interfaz mínima es un
   consumidor de la biblioteca, no parte de ella.
@@ -121,12 +119,16 @@ reportados, no evaluados.
 
 Por orden, y cada uno es un trabajo independiente:
 
-1. **La ronda adversarial sobre el código.** Faltó: el revisor se agotó antes
-   de emitir veredicto (§6). Hasta que pase, la implementación está escrita y
-   probada, pero **no revisada**, y eso hay que decirlo así. Es lo primero
-   precisamente porque juzga lo demás.
-2. **Formalizar o revertir las claves de readback** del §4, y con ellas
-   resolver el resto de huecos de contrato que la revisión confirme.
+1. ~~**La ronda adversarial sobre el código.**~~ **Ejecutada (19-09-2026)**,
+   con veredicto `fix-and-retry` y su oleada de corrección aplicada el mismo
+   día: 2 BLOCKER (valor negado guardado por texto ajeno; presupuesto sin
+   abortar señal ni cancelar el puerto), los HIGH de contrato y de flujo, y
+   la compuerta que no medía el presupuesto de lectura. **Re-ronda de los
+   fixes ejecutada: segunda oleada aplicada y verificación final con
+   veredicto `proceed`** (residual bajo declarado en §4).
+2. ~~Formalizar o revertir las claves de readback.~~ **Hecho (19-09-2026):**
+   derivación declarada en `SPEC-001` y `SPEC-007`; resto de huecos de la
+   ronda corregido o justificado en §4.
 3. **El adaptador de motor, `SPEC-011`.** Es el activo que justifica el
    proyecto. Exige dispositivo, así que trae de la mano la medición que
    resuelve la ventana de compatibilidad.
@@ -142,9 +144,13 @@ sin respaldo es justo lo que este método prohíbe.
 
 **Verificado, con su comando:**
 
-- La puerta completa en verde: `check_sizes` OK con 78 archivos, las 66 pruebas
-  del método, y `npm test` con **143 pruebas en verde** — de las cuales 126 son
-  casos de spec con su identificador.
+- La puerta completa en verde: `check_sizes` OK con 81 archivos, las 66 pruebas
+  del método, y `npm test` con **150 pruebas en verde** — de las cuales 128 son
+  casos de spec con su identificador y 22 son regresiones y casos de la ronda.
+- **La ronda adversarial del núcleo se ejecutó el 19-09-2026** con cuatro
+  revisores de contexto fresco (uno por módulo contra su spec, sólo lectura,
+  con sondas ejecutables). Veredicto: `fix-and-retry`; los BLOCKER y HIGH se
+  corrigieron; los MED restantes quedan justificados en §4.
 - Las cuatro pruebas de trazabilidad: cada caso de las spec implementadas tiene
   su prueba, ninguna prueba se apoya en un caso inexistente, el estado declarado
   coincide con lo probado, y el índice declara el mismo número de casos que las
@@ -159,11 +165,9 @@ sin respaldo es justo lo que este método prohíbe.
 
 **No verificado:**
 
-- **El código no ha pasado ronda adversarial.** El revisor de contexto fresco se
-  agotó antes de emitir veredicto. La implementación está escrita y probada,
-  pero **no revisada por ojos independientes**, y ése es el primer trabajo
-  pendiente. En particular, la tabla de mutaciones del párrafo anterior la
-  reportó quien escribió el código, no un tercero.
+- **Los fixes de la ronda pasaron re-ronda y verificación final con
+  veredicto `proceed`** (§5.3); los MED sin corrección quedaron justificados
+  en §4 y el residual bajo, declarado.
 - **Nada se ha ejecutado en un navegador.** El núcleo es determinista y se
   prueba con dobles; el adaptador real (`SPEC-011`) no existe.
 - **La ventana de compatibilidad no se ha medido.** Sin dispositivo no hay

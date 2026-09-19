@@ -177,16 +177,23 @@ export function createTurnDiscipline(options = {}) {
     return pending;
   }
 
-  // El agotamiento del presupuesto es un fallo explícito: descarta el turno
-  // y avisa. Nunca se convierte en resultado aceptado.
+  // El agotamiento del presupuesto es un fallo explícito: descarta el turno,
+  // aborta su `signal` —el cierre del núcleo es cancelación (SPEC-002)— y
+  // avisa. Nunca se convierte en resultado aceptado.
   function expireBudget(turn, pending) {
     close('budget_exhausted');
+    controller.abort();
     if (onBudgetExhausted !== null) {
-      onBudgetExhausted(Object.freeze({
-        code: PORT_BUDGET_EXHAUSTED,
-        turn: turn,
-        request: pending,
-      }));
+      try {
+        onBudgetExhausted(Object.freeze({
+          code: PORT_BUDGET_EXHAUSTED,
+          turn: turn,
+          request: pending,
+        }));
+      } catch (error) {
+        // Un aviso que lanza no tumba al planificador: el turno ya quedó
+        // descartado y abortado antes de notificar.
+      }
     }
   }
 
@@ -242,7 +249,10 @@ export function createTurnDiscipline(options = {}) {
     status = 'cancelled';
     controller.abort();
     if (port !== null && typeof port.cancel === 'function') {
-      port.cancel();
+      try { port.cancel(); } catch (error) {
+        // Cancelar es best-effort: el turno ya está cerrado y un `cancel()`
+        // que lanza no puede reabrirlo ni saltar la tabla de errores.
+      }
     }
     return true;
   }

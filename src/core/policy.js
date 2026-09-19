@@ -295,6 +295,15 @@ function usableCatalog(catalog) {
     && typeof catalog.text === 'function';
 }
 
+// El presupuesto de lectura se aplica en la compuerta (SPEC-007): un texto
+// que no cabe no se habla. Sin `measure` no hay forma de verificarlo y la
+// frontera es fail-closed: no se verifica, no se habla.
+function withinBudget(catalog, text) {
+  return isPlainObject(catalog)
+    && typeof catalog.measure === 'function'
+    && catalog.measure(text).within === true;
+}
+
 // El texto seguro sale del catálogo por clave. Si la clave no está, no se
 // improvisa texto: `missing_text` y salida declarada del paso.
 function safeText(policy, catalog, textClass) {
@@ -312,6 +321,9 @@ function safeText(policy, catalog, textClass) {
   }
   if (typeof text !== 'string' || text === '') {
     return silent('missing_text', textClass);
+  }
+  if (!withinBudget(catalog, text)) {
+    return silent('over_budget', textClass);
   }
   return speaks(text, textClass, true);
 }
@@ -349,6 +361,9 @@ export function resolveSpeech(policy, catalog, candidate) {
   }
   if (textClass === 'conversational' && !isPlainObject(policy.filter)) {
     return silent('missing_policy', textClass);
+  }
+  if (!withinBudget(catalog, input.text)) {
+    return silent('over_budget', textClass);
   }
   return speaks(input.text, textClass, false);
 }

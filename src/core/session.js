@@ -35,6 +35,7 @@ export const CAPABILITIES = Object.freeze({
 
 const CONFIG_KEYS = ['fields', 'language', 'policy', 'mode', 'ports', 'onEvent',
   'getPreviousValue'];
+const RUNTIME_KEYS = ['schedule', 'cancelSchedule'];
 const FIELD_KEYS = ['id', 'type', 'range', 'unit', 'promptKey', 'deltaPolicy'];
 const FIELD_TYPES = ['number', 'integer', 'boolean', 'text'];
 const DELTA_MODES = ['none', 'reconfirm'];
@@ -115,10 +116,18 @@ function buildCatalog(language) {
 }
 
 // La clave del aviso de degradación es la salida visible obligatoria; el
-// núcleo la exige y no improvisa texto si falta.
+// núcleo la exige completa y dentro del presupuesto en la creación, para
+// que ningún evento de fallo salga jamás sin texto (SPEC-001).
 function validateNotice(catalog, policy) {
   const key = policy.degradation.noticeKey;
   if (!catalog.has(key)) throw bad('policy.degradation.noticeKey', 'la clave no está en el catálogo');
+  let text;
+  try { text = catalog.text(key, {}); } catch (error) {
+    throw bad('policy.degradation.noticeKey', 'la clave no resuelve un texto');
+  }
+  if (!catalog.measure(text).within) {
+    throw bad('policy.degradation.noticeKey', 'el texto excede el presupuesto de lectura');
+  }
 }
 
 // Puertos deterministas por omisión: declaran la ausencia de su capacidad con
@@ -147,6 +156,19 @@ export function createVoiceSession(config, runtime = {}) {
   for (const key of Object.keys(config)) {
     if (!CONFIG_KEYS.includes(key)) throw bad(key, 'clave desconocida en la raíz de config');
   }
+  if (!isObject(runtime)) throw bad('runtime', 'debe ser un objeto');
+  for (const key of Object.keys(runtime)) {
+    if (!RUNTIME_KEYS.includes(key)) throw bad('runtime.' + key, 'clave desconocida en runtime');
+  }
+  if ((runtime.schedule === undefined) !== (runtime.cancelSchedule === undefined)) {
+    throw bad('runtime', 'exige schedule y cancelSchedule en pareja');
+  }
+  if (runtime.schedule !== undefined && typeof runtime.schedule !== 'function') {
+    throw bad('runtime.schedule', 'debe ser una función');
+  }
+  if (runtime.cancelSchedule !== undefined && typeof runtime.cancelSchedule !== 'function') {
+    throw bad('runtime.cancelSchedule', 'debe ser una función');
+  }
   const fields = validateFields(config.fields);
   const catalog = buildCatalog(config.language);
   let policy;
@@ -167,8 +189,15 @@ export function createVoiceSession(config, runtime = {}) {
   const onEvent = config.onEvent === undefined ? null : config.onEvent;
   const getPreviousValue = config.getPreviousValue === undefined ? null : config.getPreviousValue;
   const ports = Object.freeze({ ...defaultPorts(catalog), ...(isObject(injected) ? injected : {}) });
-  const schedule = typeof runtime.schedule === 'function' ? runtime.schedule : defaultSchedule;
-  const cancelSchedule = typeof runtime.cancelSchedule === 'function' ? runtime.cancelSchedule : defaultCancelSchedule;
+  // Copia mutable de puertos en vivo: el redo de un fallo o de un presupuesto
+  // sustituye el puerto tocado por su determinista (SPEC-005) y la sesión
+  // sigue con el resto tal cual se inyectaron.
+  const deterministicPorts = defaultPorts(catalog);
+  const livePorts = { ...ports };
+  const P = (name) => livePorts[name];
+  const schedule = runtime.schedule === undefined ? defaultSchedule : runtime.schedule;
+  const cancelSchedule = runtime.cancelSchedule === undefined
+    ? defaultCancelSchedule : runtime.cancelSchedule;
 
   const sessionId = 'lalia-akuo:' + (nextSessionId += 1);
   const values = Object.create(null);
@@ -192,7 +221,16 @@ export function createVoiceSession(config, runtime = {}) {
     sequence: createTurnSequence({ sessionId }),
     schedule, cancelSchedule,
     onBudgetExhausted({ turn }) {
-      if (inFlight !== null && inFlight.turnId === turn.id) settleInFlight({ budget: true });
+      if (inFlight !== null && inFlight.turnId === turn.id) {
+        const port = lastPort === null ? null : livePorts[lastPort];
+        if (port !== null && typeof port.cancel === 'function') {
+          try { port.cancel(); } catch (error) {
+            // El presupuesto ya liquidó el turno: un cancel() que lanza no
+            // reabre nada; la salida declarada sigue su curso.
+          }
+        }
+        settleInFlight({ budget: true });
+      }
     },
   });
 
@@ -219,7 +257,10 @@ export function createVoiceSession(config, runtime = {}) {
   }
 
   function notice() {
-    try { return catalog.text(policy.degradation.noticeKey); } catch (error) { return null; }
+    try {
+      const text = catalog.text(policy.degradation.noticeKey);
+      return catalog.measure(text).within ? text : null;
+    } catch (error) { return null; }
   }
 
   function manualReason(code) {
@@ -227,7 +268,7 @@ export function createVoiceSession(config, runtime = {}) {
   }
 
   function emitFailure(code, context = {}) {
-    const text = notice() ?? String(code);
+    const text = notice();
     emit(envelope('failure', context.turnId, context.port, {
       code, state, fallback: context.fallback === undefined ? null : context.fallback,
       displayText: text, speechText: speechMuted ? null : text,
@@ -235,7 +276,7 @@ export function createVoiceSession(config, runtime = {}) {
   }
 
   function emitManual(reason, fieldId, id, port) {
-    const text = notice() ?? String(reason);
+    const text = notice();
     emit(envelope('manual_input_required', id, port, {
       reason, fieldId: fieldId === undefined ? null : fieldId,
       displayText: text, speechText: speechMuted ? null : text,
@@ -327,12 +368,12 @@ export function createVoiceSession(config, runtime = {}) {
     let decision;
     try {
       decision = sayThroughPolicy({ policy, catalog, candidate: { text, textClass: 'form' },
-        speaker: ports.speaker, request });
+        speaker: P('speaker'), request });
     } catch (error) { return { ok: false, code: 'port_failure', signal: true }; }
     if (!decision.speak) return { ok: false, code: decision.code === null ? 'missing_policy' : decision.code };
     const outcome = await awaitSettled(decision.sayResult, turn);
     if (outcome.cancelled) throw NOOP;
-    if (outcome.budget) return { ok: false, code: 'speech_watchdog' };
+    if (outcome.budget) throw new PortSignal('budget', 'speaker', turn.id);
     if (!outcome.ok) return { ok: false, code: 'port_failure', signal: true };
     try { validateSpeechResult(outcome.value); } catch (error) {
       return { ok: false, code: 'port_failure', signal: true };
@@ -345,6 +386,7 @@ export function createVoiceSession(config, runtime = {}) {
     const spoken = await speakText(text, turn);
     if (spoken.ok) return null;
     if (spoken.signal) throw new PortSignal('failure', 'speaker', turn.id);
+    discipline.resolve(turn);
     return await failStep(spoken.code, { field, port: 'speaker', turnId: id, kind: 'failure' });
   }
 
@@ -354,6 +396,7 @@ export function createVoiceSession(config, runtime = {}) {
   }
 
   async function degradeStep(reason, context) {
+    pending = null;
     manualMode = true;
     closeOpenTurn();
     const fieldId = context.field ? context.field.id : null;
@@ -366,9 +409,12 @@ export function createVoiceSession(config, runtime = {}) {
     go('speaking', 'degrading', turn.id);
     emitManual(reason, fieldId, turn.id, context.port);
     const text = notice();
-    if (text === null) discipline.resolve(turn);
-    else await speakText(text, turn);
-    go('idle', 'idle', turn.id);
+    try {
+      if (text === null) discipline.resolve(turn);
+      else await speakText(text, turn);
+    } finally {
+      go('idle', 'idle', turn.id);
+    }
     return 'degraded';
   }
 
@@ -385,6 +431,7 @@ export function createVoiceSession(config, runtime = {}) {
     emitFailure(code, { turnId, port: context.port ?? null, fallback: context.fallback });
     manualMode = true;
     emitManual(manualReason(code), field ? field.id : null, turnId, context.port ?? null);
+    go('idle', 'idle', turnId);
     return 'degraded';
   }
 
@@ -439,13 +486,13 @@ export function createVoiceSession(config, runtime = {}) {
     if (manualMode) return 'rest';
     if (micMuted) return await failStep('recognition_failed', { field, port: 'listener', turnId: null, kind: 'failure' });
     const turn = openTurn('listening');
-    const result = await callPort('listener', turn, (request) => ports.listener.listen(request, callbacks(turn)));
+    const result = await callPort('listener', turn, (request) => P('listener').listen(request, callbacks(turn)));
     try { validateListeningResult(result); } catch (error) { throw new PortSignal('failure', 'listener', turn.id); }
     if (result.type === 'speech') {
       accept(turn, true);
       go('thinking', 'interpreting', turn.id);
       const next = openTurn('thinking');
-      const interpretation = await callPort('fieldInterpreter', next, (request) => ports.fieldInterpreter.interpret(result.text, field, request));
+      const interpretation = await callPort('fieldInterpreter', next, (request) => P('fieldInterpreter').interpret(result.text, field, request));
       try { validateInterpretation(interpretation, { field }); } catch (error) { throw new PortSignal('failure', 'fieldInterpreter', next.id); }
       accept(next, true);
       return await handleInterpretation(field, interpretation, next.id);
@@ -464,6 +511,7 @@ export function createVoiceSession(config, runtime = {}) {
     }
     if (category === 'repetition') { failures = 0; return 'confirm'; }
     if (category === 'negation') {
+      pending = null;
       attempts += 1; failures += 1;
       return mustDegrade() ? await degradeStep('recognition_failed', context) : 'asking';
     }
@@ -475,11 +523,11 @@ export function createVoiceSession(config, runtime = {}) {
     if (manualMode) return 'rest';
     if (micMuted) return await failStep('recognition_failed', { field, port: 'listener', turnId: null, kind: 'failure' });
     const turn = openTurn('listening');
-    const result = await callPort('listener', turn, (request) => ports.listener.listen(request, callbacks(turn)));
+    const result = await callPort('listener', turn, (request) => P('listener').listen(request, callbacks(turn)));
     try { validateListeningResult(result); } catch (error) { throw new PortSignal('failure', 'listener', turn.id); }
     if (result.type === 'speech') {
       const confidence = result.confidence === undefined ? 0 : result.confidence;
-      const category = await callPort('controlInterpreter', turn, (request) => ports.controlInterpreter.interpret(result.text, confidence, request));
+      const category = await callPort('controlInterpreter', turn, (request) => P('controlInterpreter').interpret(result.text, confidence, request));
       try { validateControlCategory(category); } catch (error) { throw new PortSignal('failure', 'controlInterpreter', turn.id); }
       accept(turn, true);
       return await applyControl(field, category, turn.id);
@@ -563,6 +611,7 @@ export function createVoiceSession(config, runtime = {}) {
           closeOpenTurn();
           const code = signal.kind === 'budget' ? 'port_budget_exhausted' : 'port_failure';
           if (manualMode) return 'rest';
+          livePorts[signal.port] = deterministicPorts[signal.port] ?? livePorts[signal.port];
           if (retries < PORT_RETRY_LIMIT) {
             retries += 1;
             emitFailure(code, { turnId: signal.turnId, port: signal.port, fallback: 'deterministic' });
@@ -592,25 +641,36 @@ export function createVoiceSession(config, runtime = {}) {
     const turn = openTurn('thinking');
     let next;
     if (pending !== null) {
-      const category = await callPort('controlInterpreter', turn, (request) => ports.controlInterpreter.interpret(text, 1, request));
+      const category = await callPort('controlInterpreter', turn, (request) => P('controlInterpreter').interpret(text, 1, request));
       try { validateControlCategory(category); } catch (error) { throw new PortSignal('failure', 'controlInterpreter', turn.id); }
       accept(turn, true);
       next = await applyControl(field, category, turn.id);
     } else {
-      const interpretation = await callPort('fieldInterpreter', turn, (request) => ports.fieldInterpreter.interpret(text, field, request));
+      const interpretation = await callPort('fieldInterpreter', turn, (request) => P('fieldInterpreter').interpret(text, field, request));
       try { validateInterpretation(interpretation, { field }); } catch (error) { throw new PortSignal('failure', 'fieldInterpreter', turn.id); }
       accept(turn, true);
       next = await handleInterpretation(field, interpretation, turn.id);
     }
     if (next === 'rest' || next === 'degraded') return next;
-    return await drive(next, field, gen);
+    next = await drive(next, field, gen);
+    if (next !== 'confirmed') return next;
+    fieldIndex += 1;
+    while (fieldIndex < fields.length) {
+      if (gen !== generation || disposed) return 'rest';
+      const following = fields[fieldIndex];
+      attempts = 0; failures = 0; retries = 0; pending = null;
+      const result = await guarded(() => drive('asking', following, gen), following, gen);
+      if (result !== 'confirmed') return result;
+      fieldIndex += 1;
+    }
+    return 'rest';
   }
 
   function cancelFlow() {
     generation += 1;
     if (inFlight !== null) settleInFlight({ cancelled: true });
     const turn = discipline.openTurn;
-    if (turn !== null) discipline.cancel(turn, lastPort === null ? null : ports[lastPort]);
+    if (turn !== null) discipline.cancel(turn, lastPort === null ? null : livePorts[lastPort]);
   }
 
   function snapshot() {

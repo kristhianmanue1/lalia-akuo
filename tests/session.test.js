@@ -8,141 +8,15 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { CAPABILITIES, PHASES, createVoiceSession } from '../src/core/session.js';
+import {
+  KEY, NOTICE, TEXT, FIELD, POLICY, PACK, fakeClock, deferred, flush, capture,
+  makePorts, harness, of, first, states, pairs, run, sessionInState,
+  TURN_BUDGET_MS, SPEECH_BUDGET_MS,
+} from './helpers/session-harness.js';
 import { ConfigError } from '../src/core/policy.js';
 
 const SESSION_URL = new URL('../src/core/session.js', import.meta.url);
 const SOURCE = readFileSync(SESSION_URL, 'utf8');
-const TURN_BUDGET_MS = 30000;
-const SPEECH_BUDGET_MS = 20000;
-
-const KEY = 'q.alpha';
-const NOTICE = 'aviso.alpha';
-const TEXT = {
-  [KEY]: 'Pregunta alpha.',
-  [`${KEY}.readback`]: 'Confirmas {value} {unit}.',
-  [`${KEY}.saved`]: 'Guardado {value} {unit}.',
-  [NOTICE]: 'Continúa por texto.',
-};
-const FIELD = { id: 'alpha', type: 'number', unit: 'u', promptKey: KEY };
-const POLICY = { degradation: { noticeKey: NOTICE } };
-
-function fakeClock() {
-  let now = 0;
-  let next = 1;
-  const timers = new Map();
-  return {
-    schedule(fn, ms) { const handle = next++; timers.set(handle, { at: now + ms, fn }); return handle; },
-    cancel(handle) { timers.delete(handle); },
-    advance(ms) {
-      now += ms;
-      const due = [...timers.entries()].filter(([, t]) => t.at <= now)
-        .sort((a, b) => a[1].at - b[1].at || a[0] - b[0]);
-      for (const [handle, timer] of due) {
-        if (!timers.has(handle)) continue;
-        timers.delete(handle);
-        timer.fn();
-      }
-    },
-    pending: () => timers.size,
-  };
-}
-
-function deferred() {
-  let resolve;
-  const promise = new Promise((done) => { resolve = done; });
-  return { promise, resolve };
-}
-
-async function flush(times = 60) {
-  for (let index = 0; index < times; index += 1) await Promise.resolve();
-}
-
-function capture(fn) {
-  try { return fn(); } catch (error) { return error; }
-}
-
-function makePorts(over = {}) {
-  return {
-    speaker: { say: () => Promise.resolve('done'), cancel() {} },
-    listener: { listen: () => Promise.resolve({ type: 'speech', text: 'alpha', confidence: 1 }), cancel() {} },
-    fieldInterpreter: { interpret: () => Promise.resolve({ code: 'ok', value: 12.5 }), cancel() {} },
-    controlInterpreter: { interpret: () => Promise.resolve('affirmation'), cancel() {} },
-    ...over,
-  };
-}
-
-function harness(over = {}) {
-  const clock = fakeClock();
-  const events = [];
-  const ports = makePorts(over.ports ?? {});
-  const config = {
-    fields: over.fields ?? [FIELD],
-    language: { pack: { language: 'zz', texts: over.texts ?? TEXT } },
-    policy: over.policy ?? POLICY,
-    ports,
-    onEvent: (event) => events.push(event),
-  };
-  if (over.mode !== undefined) config.mode = over.mode;
-  if (over.getPreviousValue !== undefined) config.getPreviousValue = over.getPreviousValue;
-  const session = createVoiceSession(config,
-    { schedule: clock.schedule, cancelSchedule: clock.cancel });
-  if (over.speechMuted) session.setSpeechMuted(true);
-  if (over.micMuted) session.setMicrophoneMuted(true);
-  return { session, events, clock, ports };
-}
-
-const of = (events, type) => events.filter((event) => event.type === type);
-const first = (events, type) => events.find((event) => event.type === type);
-const states = (events) => of(events, 'state_changed').map((event) => event.state);
-const pairs = (events) => of(events, 'state_changed').map((event) => [event.state, event.phase]);
-
-async function run(over = {}) {
-  const h = harness(over);
-  await h.session.start();
-  return h;
-}
-
-async function sessionInState(wanted) {
-  const clock = fakeClock();
-  const events = [];
-  const gate = deferred();
-  const base = makePorts();
-  let ports = base;
-  if (wanted === 'speaking') {
-    let calls = 0;
-    ports = { ...base, speaker: { say() { calls += 1; return calls === 1 ? gate.promise : Promise.resolve('done'); }, cancel() {} } };
-  }
-  if (wanted === 'listening') {
-    let calls = 0;
-    ports = { ...base, listener: { listen() { calls += 1; return calls === 1 ? gate.promise : Promise.resolve({ type: 'speech', text: 'x', confidence: 1 }); }, cancel() {} } };
-  }
-  if (wanted === 'thinking') {
-    let calls = 0;
-    ports = { ...base, fieldInterpreter: { interpret() { calls += 1; return calls === 1 ? gate.promise : Promise.resolve({ code: 'ok', value: 12.5 }); }, cancel() {} } };
-  }
-  if (wanted === 'error') {
-    let calls = 0;
-    ports = { ...base, listener: { listen() { calls += 1; return calls <= 2 ? new Promise(() => {}) : Promise.resolve({ type: 'speech', text: 'x', confidence: 1 }); }, cancel() {} } };
-  }
-  const session = createVoiceSession({
-    fields: [FIELD], language: { pack: PACK }, policy: POLICY, ports,
-    onEvent: (event) => events.push(event),
-  }, { schedule: clock.schedule, cancelSchedule: clock.cancel });
-  if (wanted !== 'idle') {
-    const running = session.start();
-    await flush();
-    if (wanted === 'error') {
-      clock.advance(TURN_BUDGET_MS);
-      await flush();
-      clock.advance(TURN_BUDGET_MS);
-      await flush();
-    }
-    return { session, events, clock, gate, running };
-  }
-  return { session, events, clock, gate, running: null };
-}
-
-const PACK = { language: 'zz', texts: TEXT };
 
 // --- Casos de SPEC-001 ---
 
@@ -456,10 +330,11 @@ test('C-005-09 desde error la única salida es la salida declarada', async () =>
   const all = pairs(events);
   const errorIndex = all.findIndex(([state, phase]) => state === 'error' && phase === 'failed');
   assert.ok(errorIndex >= 0);
-  assert.deepEqual(all.at(-1), ['error', 'failed']);
+  assert.deepEqual(all[errorIndex + 1], ['idle', 'idle'], 'el error no se resuelve a idle · idle');
+  assert.deepEqual(all.at(-1), ['idle', 'idle']);
   assert.equal(of(events, 'manual_input_required').length, 1);
   await session.submitText('x');
-  const after = pairs(events).slice(errorIndex + 1);
+  const after = pairs(events).slice(errorIndex + 2);
   assert.deepEqual(after[0], ['thinking', 'interpreting'], 'la única salida no es la declarada');
   assert.notEqual(after[0][0], 'listening');
   assert.notEqual(after[0][0] + '/' + after[0][1], 'speaking/confirming');
@@ -491,13 +366,14 @@ test('C-005-11 submitText transiciona a thinking · interpreting en los cinco es
   }
 });
 
-test('C-005-12 el presupuesto agotado se rehace sin entrar en error', async () => {
+test('C-005-12 el presupuesto agotado se rehace en determinista sin entrar en error', async () => {
   const clock = fakeClock();
   const events = [];
-  let calls = 0;
+  let cancels = 0;
+  let seen;
   const listener = {
-    listen() { calls += 1; return calls === 1 ? new Promise(() => {}) : Promise.resolve({ type: 'speech', text: 'x', confidence: 1 }); },
-    cancel() {},
+    listen(request) { seen = request; return new Promise(() => {}); },
+    cancel() { cancels += 1; },
   };
   const session = createVoiceSession({
     fields: [FIELD], language: { pack: PACK }, policy: POLICY,
@@ -507,20 +383,25 @@ test('C-005-12 el presupuesto agotado se rehace sin entrar en error', async () =
   await flush();
   clock.advance(TURN_BUDGET_MS);
   await flush();
-  assert.ok(of(events, 'failure').some((event) => event.code === 'port_budget_exhausted'));
+  const budget = of(events, 'failure').find((event) => event.code === 'port_budget_exhausted');
+  assert.ok(budget, 'no se emitió el fallo de presupuesto');
+  assert.equal(budget.fallback, 'deterministic');
+  assert.equal(cancels, 1, 'el presupuesto no canceló el puerto en vuelo');
+  assert.equal(seen.signal.aborted, true, 'la señal del turno no quedó abortada');
   assert.notEqual(session.state, 'error');
-  assert.ok(pairs(events).some(([state, phase]) => state === 'speaking' && phase === 'asking'), 'no se rehízo el turno');
+  assert.equal(of(events, 'value_confirmed').length, 0);
+  assert.equal(first(events, 'manual_input_required').reason, 'recognition_failed');
   assert.equal(clock.pending(), 0);
   await running;
-  assert.equal(session.values.alpha.value, 12.5);
 });
 
-test('C-005-13 un speaker que no cierra da watchdog y ninguna fase avanza por tiempo', async () => {
+test('C-005-13 y C-003-05 un speaker que no cierra agota su presupuesto: fallo, redo determinista y nada avanza por tiempo', async () => {
   const clock = fakeClock();
   const events = [];
+  let cancels = 0;
   const session = createVoiceSession({
     fields: [FIELD], language: { pack: PACK }, policy: POLICY,
-    ports: makePorts({ speaker: { say: () => new Promise(() => {}), cancel() {} } }),
+    ports: makePorts({ speaker: { say: () => new Promise(() => {}), cancel() { cancels += 1; } } }),
     onEvent: (event) => events.push(event),
   }, { schedule: clock.schedule, cancelSchedule: clock.cancel });
   const running = session.start();
@@ -528,11 +409,18 @@ test('C-005-13 un speaker que no cierra da watchdog y ninguna fase avanza por ti
   assert.equal(session.state, 'speaking');
   clock.advance(SPEECH_BUDGET_MS);
   await flush();
-  assert.equal(first(events, 'failure').code, 'speech_watchdog');
+  const budget = of(events, 'failure').find((event) => event.code === 'port_budget_exhausted');
+  assert.ok(budget, 'no se emitió el fallo de presupuesto');
+  assert.equal(budget.fallback, 'deterministic');
+  assert.equal(budget.port, 'speaker');
+  assert.equal(cancels, 1, 'el presupuesto no canceló al speaker en vuelo');
   assert.equal(states(events).includes('listening'), false);
-  clock.advance(SPEECH_BUDGET_MS);
+  assert.equal(of(events, 'value_confirmed').length, 0);
+  clock.advance(SPEECH_BUDGET_MS + TURN_BUDGET_MS);
   await flush();
+  assert.equal(clock.pending(), 0);
   await running;
+  assert.equal(session.state, 'idle');
 });
 
 test('C-005-14 PHASES declara los ocho valores y cada uno un solo estado', () => {
@@ -550,11 +438,20 @@ test('C-005-14 PHASES declara los ocho valores y cada uno un solo estado', () =>
 });
 
 test('C-005-15 si el reintento también agota, error · failed y salida manual', async () => {
-  const { session, events } = await sessionInState('error');
-  assert.deepEqual(pairs(events).at(-1), ['error', 'failed']);
+  const { session, events, clock } = await sessionInState('error');
+  const all = pairs(events);
+  const errorIndex = all.findIndex(([state, phase]) => state === 'error' && phase === 'failed');
+  assert.ok(errorIndex >= 0);
+  assert.deepEqual(all[errorIndex + 1], ['idle', 'idle'], 'error no se resuelve solo');
+  assert.deepEqual(all.at(-1), ['idle', 'idle']);
   assert.equal(first(events, 'manual_input_required').reason, 'port_budget_exhausted');
   assert.equal(of(events, 'failure').filter((event) => event.code === 'port_budget_exhausted').length, 2);
   assert.equal(of(events, 'value_confirmed').length, 0);
+  const mark = events.length;
+  clock.advance(TURN_BUDGET_MS + SPEECH_BUDGET_MS);
+  await flush();
+  assert.equal(events.length, mark, 'hubo un tercer intento');
+  assert.equal(session.state, 'idle');
 });
 
 // --- Casos de SPEC-008 ---

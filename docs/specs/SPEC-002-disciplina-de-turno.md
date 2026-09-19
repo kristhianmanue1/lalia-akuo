@@ -147,6 +147,9 @@ libre.
 - Todo turno lleva `id` monotónico, `token` y `expectedState`.
 - Un resultado tardío, cancelado o de otro turno **no altera nada**: es
   no-op, sin evento ni valor.
+- El agotamiento del presupuesto **también aborta `signal`**: el cierre del
+  turno por parte del núcleo es cancelación para el puerto en vuelo, con
+  `cancel()` de ese puerto llamado por quien conduce (`SPEC-004`).
 - Ninguna transición se produce por temporizador; el agotamiento del
   presupuesto produce un fallo explícito del turno, nunca éxito.
 - Un turno resuelto o cancelado no se reabre ni acepta más callbacks.

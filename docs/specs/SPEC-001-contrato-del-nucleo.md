@@ -20,10 +20,11 @@ SPEC-001 [cubre: REQ-1, REQ-6, REQ-10, REQ-11]
 
 ## Comportamiento
 
-`createVoiceSession(config)` construye una **sesión de voz aislada** y la
-devuelve. La sesión conduce un turno completo —preguntar, escuchar,
-interpretar, confirmar— sin tocar el DOM, sin abrir red, sin escribir
-almacenamiento y sin registrar por su cuenta. Lo observable es esto:
+`createVoiceSession(config, runtime?)` construye una **sesión de voz
+aislada** y la devuelve. La sesión conduce un turno completo —preguntar,
+escuchar, interpretar, confirmar— sin tocar el DOM, sin abrir red, sin
+escribir almacenamiento y sin registrar por su cuenta. Lo observable es
+esto:
 
 1. **Creación.** Si `config` no satisface este contrato, se lanza un
    `ConfigError` y **no se devuelve sesión**: no queda un objeto a medio
@@ -82,6 +83,15 @@ forma.
 | `onEvent` | `(event) => void` | no | destino de eventos de sesión |
 | `getPreviousValue` | `(fieldId) => unknown` | no | valor previo inyectado |
 
+`runtime` es el **segundo parámetro** de `createVoiceSession` y también es
+un objeto **cerrado**: sus únicas claves son `schedule` y `cancelSchedule`,
+que entran **en pareja** y como funciones, o se rechaza con `ConfigError`.
+Es la costura del tiempo: la disciplina de turno no lee el reloj
+(`SPEC-002`) y el planificador por omisión son los del entorno
+(`setTimeout`/`clearTimeout`); las pruebas inyectan un reloj falso. No es
+parte de `config` ni del esquema JSON: es inyección de ejecución, como
+`ports` y `onEvent`.
+
 `language` **es la familia 2 de §4.1.1** —`language: { pack, fallback? }`—;
 esta spec no la añade, sólo fija su forma. §6.1 exige que las claves del
 catálogo lleguen por paquete, §4.4 exige que el núcleo componga el texto que
@@ -105,6 +115,11 @@ la que ya existe en `../../src/i18n/catalog.js`.
 visible salga del catálogo por clave. Por eso la procedencia dice
 `textoPregunta` y aquí dice `promptKey`. Igual con `unit` y `range`: el
 núcleo los transporta y los valida, nunca decide su valor (`REQ-10`).
+De `promptKey` se **derivan dos claves más del catálogo**, que el paquete
+del consumidor debe declarar (`SPEC-007`): `<promptKey>.readback` para la
+confirmación leída de vuelta y `<promptKey>.saved` para el resumen de
+valor guardado. La derivación es parte de este contrato, no un detalle de
+la implementación.
 
 `deltaPolicy` y `getPreviousValue` son **opcionales y obran juntos**: con
 los dos declarados, el núcleo calcula la diferencia absoluta entre el valor
@@ -201,7 +216,7 @@ frontera.
 
 ## Salidas
 
-`createVoiceSession(config)` devuelve `session`:
+`createVoiceSession(config, runtime?)` devuelve `session`:
 
 | miembro | tipo | significado |
 |---|---|---|
@@ -369,6 +384,15 @@ renumeran los existentes.
   `getPreviousValue` CUANDO el turno lo procesa ENTONCES la diferencia no se
   evalúa, `onExceeded` no se aplica, el valor sigue el camino normal de
   confirmación y el paso no degrada por la comparación ausente (`REQ-6`).
+- **C-001-19** DADO un `runtime` con una clave desconocida, con una sola de
+  las dos funciones, que no es objeto o cuyos miembros no son funciones
+  CUANDO se llama `createVoiceSession` ENTONCES lanza `ConfigError` con
+  `invalid_config` y la ruta ofensiva, sin sesión a medio construir
+  (`REQ-1`).
+- **C-001-20** DADO un paquete que declara las claves derivadas
+  `<promptKey>.readback` y `<promptKey>.saved` CUANDO la sesión conduce la
+  confirmación y el cierre ENTONCES las resuelve del catálogo; sin una de
+  ellas el paso falla con su salida declarada y nada se guarda (`REQ-10`).
 
 ## Invariantes
 

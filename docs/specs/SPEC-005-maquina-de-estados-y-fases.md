@@ -244,13 +244,15 @@ libre.
   del primer evento audible, y el estado no entra en `error` mientras quede
   reintento (`REQ-1`).
 - **C-005-13** DADO un `speaker` que no cierra CUANDO transcurre su
-  presupuesto ENTONCES el resultado es `watchdog`, no hay transición de éxito
-  y ninguna fase avanza por tiempo transcurrido.
+  presupuesto ENTONCES se emite `failure` con
+  `code = 'port_budget_exhausted'`, el turno se rehace en determinista, no
+  hay transición de éxito y ninguna fase avanza por tiempo transcurrido
+  (`SPEC-004`, `C-004-06`).
 - **C-005-14** DADO el módulo del núcleo CUANDO se lee `PHASES` ENTONCES
   declara exactamente los ocho valores de esta spec y cada uno pertenece a un
   solo estado visible de la tabla de verdad.
-- **C-005-15** DADO un turno en el que el puerto falló y el reintento
-  determinista también agota su `budgetMs` CUANDO se resuelve el reintento
+- **C-005-15** DADO un turno en el que el reintento también agota su
+  `budgetMs` CUANDO se resuelve el reintento
   ENTONCES el estado pasa a `error` · `failed`, después a `idle` · `idle` con
   `manual_input_required`, no hay un tercer intento y ninguna transición
   produce éxito (`REQ-1`).

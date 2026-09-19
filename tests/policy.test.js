@@ -39,6 +39,10 @@ function makeCatalog(texts) {
       }
       return texts[key];
     },
+    measure(text) {
+      const characters = typeof text === 'string' ? text.length : 0;
+      return { within: characters <= 400, characters };
+    },
   };
 }
 
@@ -522,4 +526,34 @@ test('C-006-16 `blockedClasses` con «conversacional»: invalid_config y sin '
   ]);
   assert.deepEqual(POLICY_DEFAULTS,
     { maxAttempts: 1, maxConsecutiveFailures: 1 });
+});
+
+// Regresión de la ronda adversarial: la compuerta aplica el presupuesto de
+// lectura (SPEC-007). Sin `measure` verificable no se habla.
+test('la compuerta mide el presupuesto: lo que no cabe no se habla', () => {
+  const catalog = makeCatalog({
+    'alfa.aviso.degradacion': 'Aviso de degradación del dominio alfa.',
+    'alfa.texto.seguro': 'Texto seguro del dominio alfa.',
+  });
+  const largo = 'x'.repeat(401);
+  const bloqueada = policyAlfa();
+  const directo = {
+    degradation: { noticeKey: 'alfa.aviso.degradacion' },
+    filter: { drops: [] },
+  };
+  const fuera = resolveSpeech(bloqueada, catalog, { text: largo, textClass: 'form' });
+  assert.equal(fuera.speak, false);
+  assert.equal(fuera.code, 'over_budget');
+  const conversacional = resolveSpeech(directo, catalog, { text: largo, textClass: 'conversational' });
+  assert.equal(conversacional.speak, false);
+  assert.equal(conversacional.code, 'over_budget');
+  const seguroLargo = resolveSpeech(
+    policyAlfa({ safeTextKey: 'alfa.largo' }),
+    makeCatalog({ 'alfa.largo': 'y'.repeat(401), 'alfa.aviso.degradacion': 'aviso' }),
+    { text: 'cualquiera', textClass: 'conversational' },
+  );
+  assert.equal(seguroLargo.speak, false);
+  assert.equal(seguroLargo.code, 'over_budget');
+  const dentro = resolveSpeech(bloqueada, catalog, { text: 'corto', textClass: 'form' });
+  assert.equal(dentro.speak, true);
 });
