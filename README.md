@@ -27,13 +27,16 @@ de retención. Si aparece una, es un defecto de este repositorio.
 
 | Fase | Qué es | Estado |
 |---|---|---|
-| F0 | Problema, resultado observable, requisitos y no objetivos | **PARCIAL** — `docs/product/plan.md`, con tres preguntas abiertas |
-| F1 | Contratos del núcleo y fronteras | En curso — `docs/product/definicion-tecnica.md` |
-| F2 | Cascarón que corre y pasa su verificador | En curso — método adoptado, gate verde |
-| F3 | Ejecución y verificación por tarea | No empezada |
+| F0 | Problema, resultado observable, requisitos y no objetivos | **Cerrada** — `docs/product/plan.md` |
+| F1 | Contratos del núcleo y fronteras | **Cerrada** — `docs/product/definicion-tecnica.md` y sus cuatro hermanos |
+| E1 | Contrato de comportamiento, caso por caso | **Escrita** — `docs/specs/`, 185 casos; índice en `docs/specs/00-INDICE.md` |
+| Implementación | El núcleo, contra los casos de E1 | **En curso** — ocho de las once spec implementadas y probadas |
 
-El documento F0 cierra con su bloque de reporte y declara lo que falta. **Nada
-se construye sin cerrar F0**, y las tres preguntas abiertas están en su §8.
+**Para retomar el trabajo, lee [`docs/estado.md`](docs/estado.md).** Ahí está el
+estado spec por spec, los huecos declarados y cuál es el siguiente paso. Ese
+archivo no es una promesa: la prueba de trazabilidad lo contrasta con lo que
+hay probado de verdad, así que no puede quedarse atrás sin que la puerta lo
+diga.
 
 ## Cómo se construye, se corre y se prueba
 
