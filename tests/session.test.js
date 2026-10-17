@@ -226,6 +226,54 @@ test('C-001-18 sin getPreviousValue la comparación no se evalúa ni degrada', a
   assert.equal(session.values.alpha.value, 12.5);
 });
 
+test('C-001-21 getPreviousValue que lanza o no es comparable: fail-closed, reconfirma', async () => {
+  const lanzador = await run({
+    fields: [{ ...FIELD, deltaPolicy: { maxDifference: 1, onExceeded: 'reconfirm' } }],
+    getPreviousValue: () => { throw new Error('boom'); },
+  });
+  assert.equal(of(lanzador.events, 'confirmation_requested').length, 2);
+  assert.equal(of(lanzador.events, 'value_confirmed').length, 1);
+  assert.equal(lanzador.session.values.alpha.value, 12.5);
+
+  const noComparable = await run({
+    fields: [{ ...FIELD, deltaPolicy: { maxDifference: 1, onExceeded: 'reconfirm' } }],
+    getPreviousValue: () => 'cinco',
+  });
+  assert.equal(of(noComparable.events, 'confirmation_requested').length, 2);
+  assert.equal(of(noComparable.events, 'value_confirmed').length, 1);
+  assert.equal(noComparable.session.values.alpha.value, 12.5);
+});
+
+test('C-001-22 submitText con un valor que no es cadena es no-op en pleno turno', async () => {
+  const gate = deferred();
+  let calls = 0;
+  const h = harness({
+    ports: {
+      listener: {
+        listen: () => {
+          calls += 1;
+          return calls === 1
+            ? gate.promise
+            : Promise.resolve({ type: 'speech', text: 'x', confidence: 1 });
+        },
+        cancel() {},
+      },
+    },
+  });
+  const running = h.session.start();
+  await flush();
+  assert.equal(h.session.state, 'listening', 'el turno de voz no llegó a escuchar');
+  const mark = h.events.length;
+  await h.session.submitText(42);
+  await h.session.submitText(null);
+  await flush();
+  assert.equal(h.events.length, mark, 'un no-cadena produjo eventos en pleno turno');
+  assert.equal(h.session.state, 'listening', 'el turno de voz no sobrevivió');
+  gate.resolve({ type: 'speech', text: 'x', confidence: 1 });
+  await running;
+  assert.equal(h.session.values.alpha?.value, 12.5, 'el flujo posterior no completó');
+});
+
 // --- Casos de SPEC-005 ---
 
 test('C-005-01 la secuencia de estados de un turno completo es la declarada', async () => {
@@ -452,6 +500,86 @@ test('C-005-15 si el reintento también agota, error · failed y salida manual',
   await flush();
   assert.equal(events.length, mark, 'hubo un tercer intento');
   assert.equal(session.state, 'idle');
+});
+
+test('C-005-16 start() en sesión degradada a manual no habla ni abre escucha', async () => {
+  let listenCalls = 0;
+  let says = 0;
+  const h = harness({
+    policy: { degradation: { noticeKey: NOTICE }, confirmation: { maxAttempts: 1 } },
+    ports: {
+      speaker: { say: () => { says += 1; return Promise.resolve('done'); }, cancel() {} },
+      listener: {
+        listen: () => {
+          listenCalls += 1;
+          return Promise.resolve(listenCalls === 2
+            ? { type: 'speech', text: 'no', confidence: 1 }
+            : { type: 'speech', text: 'x', confidence: 1 });
+        },
+        cancel() {},
+      },
+      controlInterpreter: {
+        interpret: (text) => Promise.resolve(text === 'no' ? 'negation' : 'affirmation'),
+        cancel() {},
+      },
+    },
+  });
+  await h.session.start();
+  await flush();
+  assert.ok(of(h.events, 'manual_input_required').length >= 1, 'la sesión degradó');
+  const mark = h.events.length;
+  await h.session.start();
+  await flush();
+  assert.equal(h.events.length, mark, 'start() produjo eventos en modo manual');
+  assert.equal(says, 3, 'start() volvió a hablar el prompt');
+  assert.equal(listenCalls, 2, 'start() abrió escucha');
+  assert.equal(h.session.state, 'idle');
+  assert.equal(h.session.values.alpha, undefined);
+});
+
+test('C-005-16 el campo siguiente por submitText en sesión degradada no se habla', async () => {
+  const BETA = { id: 'beta', type: 'number', unit: 'u', promptKey: 'q.beta' };
+  const texts = {
+    ...TEXT,
+    'q.beta': 'Pregunta beta.',
+    'q.beta.readback': 'Confirmas {value} {unit}.',
+    'q.beta.saved': 'Guardado {value} {unit}.',
+  };
+  let says = 0;
+  const h = harness({
+    fields: [FIELD, BETA],
+    texts,
+    policy: { degradation: { noticeKey: NOTICE }, confirmation: { maxAttempts: 1 } },
+    ports: {
+      speaker: { say: () => { says += 1; return Promise.resolve('done'); }, cancel() {} },
+      listener: {
+        listen: () => Promise.resolve({ type: 'speech', text: 'no', confidence: 1 }),
+        cancel() {},
+      },
+      controlInterpreter: {
+        interpret: (text) => Promise.resolve(text === 'no' ? 'negation' : 'affirmation'),
+        cancel() {},
+      },
+    },
+  });
+  await h.session.start();
+  await flush();
+  assert.ok(of(h.events, 'manual_input_required').length >= 1, 'la sesión degradó');
+  await h.session.submitText('12.5');
+  await flush();
+  await h.session.submitText('sí');
+  await flush();
+  assert.equal(h.session.values.alpha?.value, 12.5, 'alpha se confirmó por texto');
+  const mark = h.events.length;
+  const saysMark = says;
+  await flush();
+  assert.equal(of(h.events.slice(mark), 'text_output')
+    .filter((event) => event.key === 'q.beta').length, 0,
+  'el prompt de beta salió como text_output');
+  assert.equal(says, saysMark, 'el prompt de beta se habló');
+  assert.notEqual(h.session.state, 'listening', 'la sesión quedó en escucha zombi');
+  assert.deepEqual(pairs(h.events).at(-1), ['idle', 'idle']);
+  assert.equal(h.session.values.beta, undefined);
 });
 
 // --- Casos de SPEC-008 ---

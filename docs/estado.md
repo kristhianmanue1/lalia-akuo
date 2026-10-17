@@ -2,7 +2,7 @@
 
 **Propósito:** que una sesión nueva sepa qué está hecho, qué no, y cuál es el
 siguiente paso concreto, **sin leer la conversación de nadie**.
-**Última actualización:** 19 de septiembre de 2026.
+**Última actualización:** 17 de octubre de 2026.
 
 Este archivo no es una promesa: lo comprueba la puerta. La prueba de
 trazabilidad (`../tests/traceability.test.js`) lee la tabla del §2 y exige que
@@ -114,6 +114,23 @@ que quedan se declaran.
 - **El piso de versiones no es un hueco abierto**: la compatibilidad se decide
   por ventana de tiempo (`ADR-011`) y no bloquea nada. Lo que falta es
   **medirla**, y eso es de la etapa de dispositivo.
+- **El presupuesto de la ruta de lectura subió a 1600** (17-oct-2026): el
+  upgrade de AN-KLA a beta.33 dejó +135 líneas gestionadas en `AN-KLA.md`
+  (`git diff --numstat`); recortar contenido gestionado rompería el contrato
+  de la herramienta, así que la decisión consciente que exige el presupuesto
+  fue subir el techo y declararlo aquí, no engordar la lectura en silencio.
+- **Defectos de conducta en corrección — `docs/plans/PLAN-001` (17-oct-2026),
+  con ronda adversarial previa:** un paso `asking` en sesión degradada a
+  manual dejaba un estado zombi `listening`·`capturing` sin escucha ni
+  desenlace (alcanzable por `start()` y por `submitText` multi-campo);
+  un `getPreviousValue` que lanza desactivaba la reconfirmación de
+  `deltaPolicy` en silencio; y la locución del aviso de degradación callaba
+  sus propios fallos. Cada uno se corrigió con caso de spec, prueba y fix
+  (**aplicado y verificado el mismo día**, §5 y §6).
+- **Residual declarado por R3 (17-oct-2026):** la validación admite
+  `deltaPolicy` en campos no numéricos y la comparación simplemente no
+  aplica; el borde es preexistente, visible y sin efecto sobre campos
+  numéricos. Se declara en vez de corregirse fuera del alcance del plan.
 
 ## 5. El siguiente paso
 
@@ -136,6 +153,20 @@ Por orden, y cada uno es un trabajo independiente:
    los anuncios por cambio de estado.
 5. **El canal de agente, `SPEC-010`.** Último por decisión explícita: entra
    después de que el núcleo esté estable (`ADR-003`).
+6. **Capa funcional sobre artefactos** (con 3 y 4): empaquetado de la
+   biblioteca, vista de referencia y suite funcional con los flujos humanos
+   guionizados — 42/43, degradación a manual, readback→confirmación por
+   texto, presupuesto con motor real, silencios, recuperación de `error`.
+   Reevalúa el riesgo aceptado del §4 con esa evidencia.
+
+   cierra los turnos por señal real y nunca por temporizador; la vista de
+   referencia y la suite funcional siguen siendo los pasos 3 a 6.
+
+**PLAN-001 ejecutado (17-10-2026):** correcciones de conducta del núcleo
+(C-001-21/22, C-002-13, C-005-16, C-008-16), CI interno con intérprete
+Python >= 3.12 fijado, superficie del paquete declarada y contrato base de
+consumo — el registro completo, con sus tres rondas adversariales, está en
+`../plans/PLAN-001-correcciones-ci-interno-y-contrato-de-consumo.md`.
 
 ## 6. Qué está verificado y qué no
 
@@ -144,17 +175,25 @@ sin respaldo es justo lo que este método prohíbe.
 
 **Verificado, con su comando:**
 
-- La puerta completa en verde: `check_sizes` OK con 81 archivos, las 66 pruebas
-  del método, y `npm test` con **150 pruebas en verde** — de las cuales 128 son
-  casos de spec con su identificador y 22 son regresiones y casos de la ronda.
+- La puerta completa en verde (`sh scripts/run-gate.sh`, con Python 3.12 del
+  venv): `check_sizes` OK con 85 archivos y ruta de lectura 1544/1600, las 66
+  pruebas del método, y `npm test` con **158 pruebas en verde** — de las
+  cuales 136 son casos de spec con su identificador y 22 son regresiones y
+  casos de las rondas.
 - **La ronda adversarial del núcleo se ejecutó el 19-09-2026** con cuatro
   revisores de contexto fresco (uno por módulo contra su spec, sólo lectura,
   con sondas ejecutables). Veredicto: `fix-and-retry`; los BLOCKER y HIGH se
   corrigieron; los MED restantes quedan justificados en §4.
+- **Las rondas del PLAN-001 se ejecutaron el 17-10-2026**: R1 sobre el
+  paquete de propuestas, R2 sobre el plan y R3 sobre el delta de código
+  (sondas y mutaciones, veredictos `fix-and-retry` los tres); las
+  correcciones que exigió cada una están aplicadas y verificadas en el
+  registro del plan (`../plans/PLAN-001-correcciones-ci-interno-y-contrato-de-consumo.md`
+  §Rondas).
 - Las cuatro pruebas de trazabilidad: cada caso de las spec implementadas tiene
   su prueba, ninguna prueba se apoya en un caso inexistente, el estado declarado
   coincide con lo probado, y el índice declara el mismo número de casos que las
-  spec.
+  spec (192 casos en once spec).
 - Que el núcleo no abre red, no persiste, no escribe almacenamiento ni toca el
   DOM: comprobado **sobre el código** buscando `fetch`, `XMLHttpRequest`,
   `WebSocket`, `localStorage`, `indexedDB`, `document`, `window` y `console`.

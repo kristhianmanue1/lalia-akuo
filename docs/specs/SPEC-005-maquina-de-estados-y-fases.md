@@ -66,7 +66,7 @@ se cumple **no es disparador**: no hay transición ni evento.
 
 ```text
 ORIGEN     DISPARADOR                              DESTINO          FASE
-idle       -- start()                           --> speaking      · asking
+idle       -- start(), sesión no degradada      --> speaking      · asking
 speaking   -- speaker 'done', fase asking |
               confirming                        --> listening     · capturing
 speaking   -- speaker 'done', fase closing |
@@ -97,9 +97,17 @@ thinking   -- lectura no resuelta                --> speaking     · asking | de
 listening  -- control 'negation'                 --> speaking     · asking | degrading
 listening  -- control 'unclassified'             --> speaking     · asking | degrading
 listening  -- control 'manual'                   --> speaking     · degrading
-idle       -- start(), voz silenciada            --> listening    · capturing
+idle       -- start(), voz silenciada,
+             sesión no degradada                 --> listening    · capturing
 cualquiera -- setMicrophoneMuted(true)           --> idle         · idle
 ```
+
+En una sesión degradada a entrada manual ningún disparador de voz re-engancha
+el flujo: `start()` no habla ni abre escucha —ni siembre con la voz
+silenciada—, ningún paso `asking` —incluido el que sigue a un campo confirmado
+por texto— emite locución, `text_output` del prompt o transición a
+`speaking`/`listening`, y la sesión permanece `idle` · `idle` con
+`submitText` como única salida declarada (`C-005-16`, `SPEC-008`).
 
 La reconfirmación por `deltaPolicy.onExceeded = 'reconfirm'` (`SPEC-001`) no
 introduce estado ni fase: dentro del mismo par `speaking` · `confirming`, el
@@ -256,6 +264,12 @@ libre.
   ENTONCES el estado pasa a `error` · `failed`, después a `idle` · `idle` con
   `manual_input_required`, no hay un tercer intento y ninguna transición
   produce éxito (`REQ-1`).
+- **C-005-16** DADO una sesión degradada a entrada manual CUANDO se llama
+  `start()` de nuevo o el flujo llega a un paso `asking` —incluido el campo
+  siguiente a uno confirmado por `submitText`— ENTONCES no hay locución del
+  prompt, ni `text_output` del prompt, ni `state_changed` a `speaking` o
+  `listening`: la sesión queda `idle` · `idle` y la salida declarada sigue
+  siendo `submitText` (`REQ-1`, `SPEC-008`).
 
 ## Invariantes
 

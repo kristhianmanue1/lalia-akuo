@@ -393,6 +393,15 @@ renumeran los existentes.
   `<promptKey>.readback` y `<promptKey>.saved` CUANDO la sesión conduce la
   confirmación y el cierre ENTONCES las resuelve del catálogo; sin una de
   ellas el paso falla con su salida declarada y nada se guarda (`REQ-10`).
+- **C-001-21** DADO un campo con `deltaPolicy.onExceeded = 'reconfirm'` y un
+  `getPreviousValue` que lanza o que devuelve un valor no numérico finito
+  CUANDO el turno procesa un valor ENTONCES la comparación no se desactiva
+  en silencio: sin lectura confiable del valor previo el núcleo no puede
+  afirmar que la diferencia es pequeña, aplica la segunda confirmación y el
+  valor no se guarda con una sola confirmación (`REQ-6`).
+- **C-001-22** DADO `submitText` con un valor que no es cadena CUANDO se
+  llama ENTONCES es un no-op declarado: sin eventos, sin transiciones y sin
+  excepción — la entrada por texto nunca es castigo ni trampa (`REQ-1`).
 
 ## Invariantes
 

@@ -28,6 +28,7 @@ export const NOOP_REASONS = Object.freeze({
   expected_state_mismatch: 'expected_state_mismatch',
   turn_resolved: 'turn_resolved',
   turn_cancelled: 'turn_cancelled',
+  budget_exhausted: 'budget_exhausted',
 });
 
 // Código del fallo explícito por agotamiento del presupuesto (SPEC-004).
@@ -212,6 +213,9 @@ export function createTurnDiscipline(options = {}) {
     }
     if (label.token !== currentTurn.token) {
       return noop(NOOP_REASONS.token_mismatch);
+    }
+    if (status === 'budget_exhausted') {
+      return noop(NOOP_REASONS.budget_exhausted);
     }
     if (status === 'cancelled' || controller.signal.aborted) {
       return noop(NOOP_REASONS.turn_cancelled);

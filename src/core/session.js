@@ -411,7 +411,15 @@ export function createVoiceSession(config, runtime = {}) {
     const text = notice();
     try {
       if (text === null) discipline.resolve(turn);
-      else await speakText(text, turn);
+      else {
+        const spoken = await speakText(text, turn);
+        // La locución del aviso también es locución: su fallo no calla
+        // (C-008-16). El turno se cierra como haría speakOrFail.
+        if (!spoken.ok) {
+          discipline.resolve(turn);
+          emitFailure(spoken.code, { turnId: turn.id, port: 'speaker' });
+        }
+      }
     } finally {
       go('idle', 'idle', turn.id);
     }
@@ -446,9 +454,11 @@ export function createVoiceSession(config, runtime = {}) {
   function needsReconfirm(field, value) {
     if (field.deltaPolicy === null || field.deltaPolicy.onExceeded !== 'reconfirm'
         || getPreviousValue === null || typeof value !== 'number') return false;
+    // Fail-closed (C-001-21): sin lectura confiable del valor previo no hay
+    // forma de afirmar que la diferencia es pequeña; se reconfirma.
     let previous;
-    try { previous = getPreviousValue(field.id); } catch (error) { return false; }
-    if (typeof previous !== 'number' || !Number.isFinite(previous)) return false;
+    try { previous = getPreviousValue(field.id); } catch (error) { return true; }
+    if (typeof previous !== 'number' || !Number.isFinite(previous)) return true;
     return Math.abs(value - previous) > field.deltaPolicy.maxDifference;
   }
 
@@ -462,6 +472,9 @@ export function createVoiceSession(config, runtime = {}) {
   }
 
   async function stageAsk(field) {
+    // En modo manual ningún paso asking re-engancha el flujo por voz: ni
+    // locución, ni text_output, ni transición (C-005-16, SPEC-005).
+    if (manualMode) return 'rest';
     const resolved = resolveText(field.promptKey, { fieldId: field.id });
     if (!resolved.ok) return await failStep(resolved.code, { field, port: null, turnId: null, kind: 'failure' });
     const gated = gate(resolved.text);
@@ -610,7 +623,13 @@ export function createVoiceSession(config, runtime = {}) {
         if (signal instanceof PortSignal) {
           closeOpenTurn();
           const code = signal.kind === 'budget' ? 'port_budget_exhausted' : 'port_failure';
-          if (manualMode) return 'rest';
+          if (manualMode) {
+            // En modo manual no hay redo, pero el fallo no calla (C-008-16);
+            // tampoco deja un estado colgado sin flujo vivo.
+            emitFailure(code, { turnId: signal.turnId, port: signal.port });
+            if (state !== 'idle' || phase !== 'idle') go('idle', 'idle');
+            return 'rest';
+          }
           livePorts[signal.port] = deterministicPorts[signal.port] ?? livePorts[signal.port];
           if (retries < PORT_RETRY_LIMIT) {
             retries += 1;
