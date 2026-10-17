@@ -2,7 +2,7 @@
 
 **Propósito:** que una sesión nueva sepa qué está hecho, qué no, y cuál es el
 siguiente paso concreto, **sin leer la conversación de nadie**.
-**Última actualización:** 19 de septiembre de 2026.
+**Última actualización:** 17 de octubre de 2026.
 
 Este archivo no es una promesa: lo comprueba la puerta. La prueba de
 trazabilidad (`../tests/traceability.test.js`) lee la tabla del §2 y exige que
@@ -114,6 +114,18 @@ que quedan se declaran.
 - **El piso de versiones no es un hueco abierto**: la compatibilidad se decide
   por ventana de tiempo (`ADR-011`) y no bloquea nada. Lo que falta es
   **medirla**, y eso es de la etapa de dispositivo.
+- **El presupuesto de la ruta de lectura subió a 1600** (17-oct-2026): el
+  upgrade de AN-KLA a beta.33 dejó +135 líneas gestionadas en `AN-KLA.md`
+  (`git diff --numstat`); recortar contenido gestionado rompería el contrato
+  de la herramienta, así que la decisión consciente que exige el presupuesto
+  fue subir el techo y declararlo aquí, no engordar la lectura en silencio.
+- **Defectos de conducta en corrección — `docs/plans/PLAN-001` (17-oct-2026),
+  con ronda adversarial previa:** un paso `asking` en sesión degradada a
+  manual dejaba un estado zombi `listening`·`capturing` sin escucha ni
+  desenlace (alcanzable por `start()` y por `submitText` multi-campo);
+  un `getPreviousValue` que lanza desactivaba la reconfirmación de
+  `deltaPolicy` en silencio; y la locución del aviso de degradación callaba
+  sus propios fallos. Cada uno se corrige con caso de spec, prueba y fix.
 
 ## 5. El siguiente paso
 
@@ -136,6 +148,11 @@ Por orden, y cada uno es un trabajo independiente:
    los anuncios por cambio de estado.
 5. **El canal de agente, `SPEC-010`.** Último por decisión explícita: entra
    después de que el núcleo esté estable (`ADR-003`).
+6. **Capa funcional sobre artefactos** (con 3 y 4): empaquetado de la
+   biblioteca, vista de referencia y suite funcional con los flujos humanos
+   guionizados — 42/43, degradación a manual, readback→confirmación por
+   texto, presupuesto con motor real, silencios, recuperación de `error`.
+   Reevalúa el riesgo aceptado del §4 con esa evidencia.
 
 ## 6. Qué está verificado y qué no
 

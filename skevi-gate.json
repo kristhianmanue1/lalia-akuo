@@ -7,7 +7,7 @@
     "scripts/check_sizes.py": 870
   },
   "reading_path": {
-    "limit": 1400,
+    "limit": 1600,
     "files": [
       "AGENTS.md",
       "docs/ai-agent-guide/00-INDICE.md",
