@@ -244,15 +244,34 @@ test('C-001-21 getPreviousValue que lanza o no es comparable: fail-closed, recon
   assert.equal(noComparable.session.values.alpha.value, 12.5);
 });
 
-test('C-001-22 submitText con un valor que no es cadena es no-op declarado', async () => {
-  const { session, events } = await run();
-  const mark = events.length;
-  await session.submitText(42);
-  await session.submitText(null);
-  await session.submitText(undefined);
+test('C-001-22 submitText con un valor que no es cadena es no-op en pleno turno', async () => {
+  const gate = deferred();
+  let calls = 0;
+  const h = harness({
+    ports: {
+      listener: {
+        listen: () => {
+          calls += 1;
+          return calls === 1
+            ? gate.promise
+            : Promise.resolve({ type: 'speech', text: 'x', confidence: 1 });
+        },
+        cancel() {},
+      },
+    },
+  });
+  const running = h.session.start();
   await flush();
-  assert.equal(events.length, mark, 'un no-cadena produjo eventos');
-  assert.equal(session.state, 'idle');
+  assert.equal(h.session.state, 'listening', 'el turno de voz no llegó a escuchar');
+  const mark = h.events.length;
+  await h.session.submitText(42);
+  await h.session.submitText(null);
+  await flush();
+  assert.equal(h.events.length, mark, 'un no-cadena produjo eventos en pleno turno');
+  assert.equal(h.session.state, 'listening', 'el turno de voz no sobrevivió');
+  gate.resolve({ type: 'speech', text: 'x', confidence: 1 });
+  await running;
+  assert.equal(h.session.values.alpha?.value, 12.5, 'el flujo posterior no completó');
 });
 
 // --- Casos de SPEC-005 ---

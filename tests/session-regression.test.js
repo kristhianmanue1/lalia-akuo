@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import { createVoiceSession } from '../src/core/session.js';
 import {
   TEXT, FIELD, POLICY, PACK, NOTICE, capture, makePorts, run, harness,
-  of, flush, SPEECH_BUDGET_MS,
+  of, flush, pairs, SPEECH_BUDGET_MS,
 } from './helpers/session-harness.js';
 
 // --- Regresiones de la ronda adversarial ---
@@ -153,5 +153,39 @@ test('C-008-16 el presupuesto agotado durante el aviso de degradación no calla'
     .some((event) => event.code === 'port_budget_exhausted'),
     true, 'el presupuesto de la locución del aviso calló');
   assert.equal(h.session.state, 'idle');
+  assert.equal(h.clock.pending(), 0, 'quedó un vigilante armado');
+});
+
+test('C-008-16 un presupuesto agotado en modo manual fuera del aviso cierra en idle', async () => {
+  let says = 0;
+  let controls = 0;
+  const h = harness({
+    policy: { degradation: { noticeKey: NOTICE }, confirmation: { maxAttempts: 1 } },
+    ports: {
+      speaker: {
+        say() { says += 1; return says === 4 ? new Promise(() => {}) : Promise.resolve('done'); },
+        cancel() {},
+      },
+      controlInterpreter: {
+        interpret: () => { controls += 1; return Promise.resolve(controls === 1 ? 'negation' : 'affirmation'); },
+        cancel() {},
+      },
+    },
+  });
+  const running = h.session.start();
+  await flush();
+  assert.ok(of(h.events, 'manual_input_required').length >= 1, 'la sesión degradó');
+  const submitting = h.session.submitText('12.5');
+  await flush();
+  assert.equal(h.session.state, 'speaking', 'el readback por texto no empezó');
+  h.clock.advance(SPEECH_BUDGET_MS);
+  await flush();
+  await submitting;
+  await running;
+  assert.equal(of(h.events, 'failure')
+    .some((event) => event.code === 'port_budget_exhausted'),
+    true, 'el fallo calló');
+  assert.equal(h.session.state, 'idle', 'el estado quedó colgado');
+  assert.deepEqual(pairs(h.events).at(-1), ['idle', 'idle']);
   assert.equal(h.clock.pending(), 0, 'quedó un vigilante armado');
 });

@@ -624,8 +624,10 @@ export function createVoiceSession(config, runtime = {}) {
           closeOpenTurn();
           const code = signal.kind === 'budget' ? 'port_budget_exhausted' : 'port_failure';
           if (manualMode) {
-            // En modo manual no hay redo, pero el fallo no calla (C-008-16).
+            // En modo manual no hay redo, pero el fallo no calla (C-008-16);
+            // tampoco deja un estado colgado sin flujo vivo.
             emitFailure(code, { turnId: signal.turnId, port: signal.port });
+            if (state !== 'idle' || phase !== 'idle') go('idle', 'idle');
             return 'rest';
           }
           livePorts[signal.port] = deterministicPorts[signal.port] ?? livePorts[signal.port];

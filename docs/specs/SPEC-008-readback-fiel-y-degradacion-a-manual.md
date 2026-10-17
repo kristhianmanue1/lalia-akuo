@@ -249,8 +249,9 @@ libre.
   **nunca** declara un éxito de voz.
 - La degradación no produce silencio: siempre hay salida visible, y la
   entrada por texto está disponible en todo estado. Ni la locución del aviso
-  misma calla: si falla, su fallo se anuncia como `failure` con su código
-  (`C-008-16`).
+  misma calla: si falla, su fallo se anuncia como `failure` con su código, y
+  ningún fallo con la sesión ya en modo manual deja un estado colgado: la
+  sesión vuelve a `idle` · `idle` (`C-008-16`).
 - El límite de fallos repetidos es un entero finito declarado; ausente,
   vale 1. Sin él, el flujo no puede entrar en un bucle.
 - La degradación por contadores ocurre en cuanto se agota **el primero** de
