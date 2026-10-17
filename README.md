@@ -93,9 +93,11 @@ const session = createVoiceSession({
 await session.start();
 ```
 
-La superficie pública completa, el ciclo de vida, las garantías y los
-no-objectivos por canal están en el
-[contrato de consumo](docs/product/contrato-de-consumo.md).
+La superficie pública completa, el ciclo de vida, las garantías, los
+no-objectivos por canal y las **recetas de integración** (almacenamiento,
+gramática, eventos, reloj de pruebas, paquete regional) están en el
+[contrato de consumo](docs/product/contrato-de-consumo.md). Un ejemplo
+ejecutable y completo vive en [`examples/tres-campos/`](examples/tres-campos/).
 
 ## Estructura
 
