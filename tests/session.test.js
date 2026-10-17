@@ -226,6 +226,24 @@ test('C-001-18 sin getPreviousValue la comparación no se evalúa ni degrada', a
   assert.equal(session.values.alpha.value, 12.5);
 });
 
+test('C-001-21 getPreviousValue que lanza o no es comparable: fail-closed, reconfirma', async () => {
+  const lanzador = await run({
+    fields: [{ ...FIELD, deltaPolicy: { maxDifference: 1, onExceeded: 'reconfirm' } }],
+    getPreviousValue: () => { throw new Error('boom'); },
+  });
+  assert.equal(of(lanzador.events, 'confirmation_requested').length, 2);
+  assert.equal(of(lanzador.events, 'value_confirmed').length, 1);
+  assert.equal(lanzador.session.values.alpha.value, 12.5);
+
+  const noComparable = await run({
+    fields: [{ ...FIELD, deltaPolicy: { maxDifference: 1, onExceeded: 'reconfirm' } }],
+    getPreviousValue: () => 'cinco',
+  });
+  assert.equal(of(noComparable.events, 'confirmation_requested').length, 2);
+  assert.equal(of(noComparable.events, 'value_confirmed').length, 1);
+  assert.equal(noComparable.session.values.alpha.value, 12.5);
+});
+
 // --- Casos de SPEC-005 ---
 
 test('C-005-01 la secuencia de estados de un turno completo es la declarada', async () => {

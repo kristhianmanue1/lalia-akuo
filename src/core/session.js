@@ -446,9 +446,11 @@ export function createVoiceSession(config, runtime = {}) {
   function needsReconfirm(field, value) {
     if (field.deltaPolicy === null || field.deltaPolicy.onExceeded !== 'reconfirm'
         || getPreviousValue === null || typeof value !== 'number') return false;
+    // Fail-closed (C-001-21): sin lectura confiable del valor previo no hay
+    // forma de afirmar que la diferencia es pequeña; se reconfirma.
     let previous;
-    try { previous = getPreviousValue(field.id); } catch (error) { return false; }
-    if (typeof previous !== 'number' || !Number.isFinite(previous)) return false;
+    try { previous = getPreviousValue(field.id); } catch (error) { return true; }
+    if (typeof previous !== 'number' || !Number.isFinite(previous)) return true;
     return Math.abs(value - previous) > field.deltaPolicy.maxDifference;
   }
 
