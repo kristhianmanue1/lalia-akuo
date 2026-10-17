@@ -399,6 +399,9 @@ renumeran los existentes.
   en silencio: sin lectura confiable del valor previo el núcleo no puede
   afirmar que la diferencia es pequeña, aplica la segunda confirmación y el
   valor no se guarda con una sola confirmación (`REQ-6`).
+- **C-001-22** DADO `submitText` con un valor que no es cadena CUANDO se
+  llama ENTONCES es un no-op declarado: sin eventos, sin transiciones y sin
+  excepción — la entrada por texto nunca es castigo ni trampa (`REQ-1`).
 
 ## Invariantes
 

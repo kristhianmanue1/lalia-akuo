@@ -244,6 +244,17 @@ test('C-001-21 getPreviousValue que lanza o no es comparable: fail-closed, recon
   assert.equal(noComparable.session.values.alpha.value, 12.5);
 });
 
+test('C-001-22 submitText con un valor que no es cadena es no-op declarado', async () => {
+  const { session, events } = await run();
+  const mark = events.length;
+  await session.submitText(42);
+  await session.submitText(null);
+  await session.submitText(undefined);
+  await flush();
+  assert.equal(events.length, mark, 'un no-cadena produjo eventos');
+  assert.equal(session.state, 'idle');
+});
+
 // --- Casos de SPEC-005 ---
 
 test('C-005-01 la secuencia de estados de un turno completo es la declarada', async () => {
