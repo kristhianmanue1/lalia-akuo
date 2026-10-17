@@ -472,6 +472,86 @@ test('C-005-15 si el reintento también agota, error · failed y salida manual',
   assert.equal(session.state, 'idle');
 });
 
+test('C-005-16 start() en sesión degradada a manual no habla ni abre escucha', async () => {
+  let listenCalls = 0;
+  let says = 0;
+  const h = harness({
+    policy: { degradation: { noticeKey: NOTICE }, confirmation: { maxAttempts: 1 } },
+    ports: {
+      speaker: { say: () => { says += 1; return Promise.resolve('done'); }, cancel() {} },
+      listener: {
+        listen: () => {
+          listenCalls += 1;
+          return Promise.resolve(listenCalls === 2
+            ? { type: 'speech', text: 'no', confidence: 1 }
+            : { type: 'speech', text: 'x', confidence: 1 });
+        },
+        cancel() {},
+      },
+      controlInterpreter: {
+        interpret: (text) => Promise.resolve(text === 'no' ? 'negation' : 'affirmation'),
+        cancel() {},
+      },
+    },
+  });
+  await h.session.start();
+  await flush();
+  assert.ok(of(h.events, 'manual_input_required').length >= 1, 'la sesión degradó');
+  const mark = h.events.length;
+  await h.session.start();
+  await flush();
+  assert.equal(h.events.length, mark, 'start() produjo eventos en modo manual');
+  assert.equal(says, 3, 'start() volvió a hablar el prompt');
+  assert.equal(listenCalls, 2, 'start() abrió escucha');
+  assert.equal(h.session.state, 'idle');
+  assert.equal(h.session.values.alpha, undefined);
+});
+
+test('C-005-16 el campo siguiente por submitText en sesión degradada no se habla', async () => {
+  const BETA = { id: 'beta', type: 'number', unit: 'u', promptKey: 'q.beta' };
+  const texts = {
+    ...TEXT,
+    'q.beta': 'Pregunta beta.',
+    'q.beta.readback': 'Confirmas {value} {unit}.',
+    'q.beta.saved': 'Guardado {value} {unit}.',
+  };
+  let says = 0;
+  const h = harness({
+    fields: [FIELD, BETA],
+    texts,
+    policy: { degradation: { noticeKey: NOTICE }, confirmation: { maxAttempts: 1 } },
+    ports: {
+      speaker: { say: () => { says += 1; return Promise.resolve('done'); }, cancel() {} },
+      listener: {
+        listen: () => Promise.resolve({ type: 'speech', text: 'no', confidence: 1 }),
+        cancel() {},
+      },
+      controlInterpreter: {
+        interpret: (text) => Promise.resolve(text === 'no' ? 'negation' : 'affirmation'),
+        cancel() {},
+      },
+    },
+  });
+  await h.session.start();
+  await flush();
+  assert.ok(of(h.events, 'manual_input_required').length >= 1, 'la sesión degradó');
+  await h.session.submitText('12.5');
+  await flush();
+  await h.session.submitText('sí');
+  await flush();
+  assert.equal(h.session.values.alpha?.value, 12.5, 'alpha se confirmó por texto');
+  const mark = h.events.length;
+  const saysMark = says;
+  await flush();
+  assert.equal(of(h.events.slice(mark), 'text_output')
+    .filter((event) => event.key === 'q.beta').length, 0,
+  'el prompt de beta salió como text_output');
+  assert.equal(says, saysMark, 'el prompt de beta se habló');
+  assert.notEqual(h.session.state, 'listening', 'la sesión quedó en escucha zombi');
+  assert.deepEqual(pairs(h.events).at(-1), ['idle', 'idle']);
+  assert.equal(h.session.values.beta, undefined);
+});
+
 // --- Casos de SPEC-008 ---
 
 test('C-008-01 el readback dice el valor exacto que se va a guardar', async () => {

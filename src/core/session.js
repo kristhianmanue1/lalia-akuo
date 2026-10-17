@@ -464,6 +464,9 @@ export function createVoiceSession(config, runtime = {}) {
   }
 
   async function stageAsk(field) {
+    // En modo manual ningún paso asking re-engancha el flujo por voz: ni
+    // locución, ni text_output, ni transición (C-005-16, SPEC-005).
+    if (manualMode) return 'rest';
     const resolved = resolveText(field.promptKey, { fieldId: field.id });
     if (!resolved.ok) return await failStep(resolved.code, { field, port: null, turnId: null, kind: 'failure' });
     const gated = gate(resolved.text);
