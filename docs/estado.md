@@ -155,12 +155,10 @@ Por orden, y cada uno es un trabajo independiente:
    después de que el núcleo esté estable (`ADR-003`).
 6. **Capa funcional sobre artefactos** (con 3 y 4): empaquetado de la
    biblioteca, vista de referencia y suite funcional con los flujos humanos
-   guionizados — 42/43, degradación a manual, readback→confirmación por
-   texto, presupuesto con motor real, silencios, recuperación de `error`.
-   Reevalúa el riesgo aceptado del §4 con esa evidencia.
-
-   cierra los turnos por señal real y nunca por temporizador; la vista de
-   referencia y la suite funcional siguen siendo los pasos 3 a 6.
+   guionizados — degradación a manual y continuación por texto,
+   readback→confirmación por texto, presupuesto con motor real, los dos
+   silencios y recuperación de `error`. Reevalúa el riesgo aceptado del §4
+   con esa evidencia.
 
 **PLAN-001 ejecutado (17-10-2026):** correcciones de conducta del núcleo
 (C-001-21/22, C-002-13, C-005-16, C-008-16), CI interno con intérprete
