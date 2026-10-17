@@ -228,6 +228,12 @@ libre.
   se repregunta y luego falla CUANDO se agota el primero de los dos
   contadores ENTONCES el paso degrada a manual en ese punto y no espera al
   otro (`REQ-8`).
+- **C-008-16** DADO la locución del aviso de degradación que falla —
+  `speech_failed`, `speech_watchdog`, `port_failure` o
+  `port_budget_exhausted`— CUANDO el paso degrada ENTONCES además del
+  `manual_input_required` con el aviso visible se emite `failure` con su
+  código, el turno de esa locución queda cerrado y la sesión termina en
+  `idle` · `idle`: ningún fallo produce silencio (`REQ-8`).
 
 ## Invariantes
 
@@ -242,7 +248,9 @@ libre.
 - La degradación es parte del flujo: **nunca** es `state = 'error'` y
   **nunca** declara un éxito de voz.
 - La degradación no produce silencio: siempre hay salida visible, y la
-  entrada por texto está disponible en todo estado.
+  entrada por texto está disponible en todo estado. Ni la locución del aviso
+  misma calla: si falla, su fallo se anuncia como `failure` con su código
+  (`C-008-16`).
 - El límite de fallos repetidos es un entero finito declarado; ausente,
   vale 1. Sin él, el flujo no puede entrar en un bucle.
 - La degradación por contadores ocurre en cuanto se agota **el primero** de

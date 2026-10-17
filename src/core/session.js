@@ -411,7 +411,15 @@ export function createVoiceSession(config, runtime = {}) {
     const text = notice();
     try {
       if (text === null) discipline.resolve(turn);
-      else await speakText(text, turn);
+      else {
+        const spoken = await speakText(text, turn);
+        // La locución del aviso también es locución: su fallo no calla
+        // (C-008-16). El turno se cierra como haría speakOrFail.
+        if (!spoken.ok) {
+          discipline.resolve(turn);
+          emitFailure(spoken.code, { turnId: turn.id, port: 'speaker' });
+        }
+      }
     } finally {
       go('idle', 'idle', turn.id);
     }
@@ -615,7 +623,11 @@ export function createVoiceSession(config, runtime = {}) {
         if (signal instanceof PortSignal) {
           closeOpenTurn();
           const code = signal.kind === 'budget' ? 'port_budget_exhausted' : 'port_failure';
-          if (manualMode) return 'rest';
+          if (manualMode) {
+            // En modo manual no hay redo, pero el fallo no calla (C-008-16).
+            emitFailure(code, { turnId: signal.turnId, port: signal.port });
+            return 'rest';
+          }
           livePorts[signal.port] = deterministicPorts[signal.port] ?? livePorts[signal.port];
           if (retries < PORT_RETRY_LIMIT) {
             retries += 1;

@@ -8,7 +8,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createVoiceSession } from '../src/core/session.js';
 import {
-  TEXT, FIELD, POLICY, PACK, NOTICE, capture, makePorts, run, of,
+  TEXT, FIELD, POLICY, PACK, NOTICE, capture, makePorts, run, harness,
+  of, flush, SPEECH_BUDGET_MS,
 } from './helpers/session-harness.js';
 
 // --- Regresiones de la ronda adversarial ---
@@ -114,4 +115,43 @@ test('C-003-03 un speaker que resuelve watchdog o error falla declarado y no rev
   assert.equal(of(events, 'value_confirmed').length, 0);
   assert.equal(session.state, 'idle');
   assert.ok(of(events, 'manual_input_required').length >= 1);
+});
+
+test('C-008-16 la locución del aviso de degradación que falla no calla: failure con su código', async () => {
+  let says = 0;
+  const { session, events } = await run({
+    ports: {
+      speaker: { say() { says += 1; return Promise.resolve(says === 3 ? 'error' : 'done'); }, cancel() {} },
+      controlInterpreter: { interpret: () => Promise.resolve('negation'), cancel() {} },
+    },
+  });
+  assert.ok(of(events, 'manual_input_required').length >= 1, 'la sesión degradó');
+  assert.equal(says, 3, 'el aviso no se locutó');
+  assert.equal(of(events, 'failure').some((event) => event.code === 'speech_failed'),
+    true, 'el fallo de la locución del aviso calló');
+  assert.equal(session.state, 'idle');
+});
+
+test('C-008-16 el presupuesto agotado durante el aviso de degradación no calla', async () => {
+  let says = 0;
+  const h = harness({
+    ports: {
+      speaker: {
+        say() { says += 1; return says <= 2 ? Promise.resolve('done') : new Promise(() => {}); },
+        cancel() {},
+      },
+      controlInterpreter: { interpret: () => Promise.resolve('negation'), cancel() {} },
+    },
+  });
+  const running = h.session.start();
+  await flush();
+  h.clock.advance(SPEECH_BUDGET_MS);
+  await flush();
+  await running;
+  assert.ok(of(h.events, 'manual_input_required').length >= 1, 'la sesión degradó');
+  assert.equal(of(h.events, 'failure')
+    .some((event) => event.code === 'port_budget_exhausted'),
+    true, 'el presupuesto de la locución del aviso calló');
+  assert.equal(h.session.state, 'idle');
+  assert.equal(h.clock.pending(), 0, 'quedó un vigilante armado');
 });

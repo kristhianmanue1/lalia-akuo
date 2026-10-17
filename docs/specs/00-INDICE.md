@@ -30,12 +30,12 @@ estado deja.
 | `SPEC-005-maquina-de-estados-y-fases.md` | Estados visibles, transiciones y la enumeración de fases internas | 1 | 16 |
 | `SPEC-006-politica-declarada-y-compuerta.md` | Dónde declara el consumidor su política y la compuerta que se aplica antes de hablar | 10, 11 | 16 |
 | `SPEC-007-catalogo-de-idioma.md` | El mecanismo de paquetes de idioma, la etiqueta de idioma y el fallo en cerrado por clave ausente | 7, 12 | 13 |
-| `SPEC-008-readback-fiel-y-degradacion-a-manual.md` | Que lo que se oye diga el valor que se va a guardar, y que la degradación a manual sea parte del flujo | 7, 8 | 15 |
+| `SPEC-008-readback-fiel-y-degradacion-a-manual.md` | Que lo que se oye diga el valor que se va a guardar, y que la degradación a manual sea parte del flujo | 7, 8 | 16 |
 | `SPEC-009-accesibilidad-e-interfaz-minima.md` | Los cuatro controles, un anuncio por cambio de estado, los dos silencios separados y el aviso de audio fuera del dispositivo | 9, 16 | 18 |
 | `SPEC-010-protocolo-agente-pagina.md` | La frontera del canal de agente como contrato, con el texto de entrada como dato no confiable | 14, 17 | 17 |
 | `SPEC-011-adaptador-web-speech-y-parches.md` | El adaptador de motor y los parches obligatorios por motor, con su síntoma y su prueba | 18 | 24 |
 
-Total: **189 casos** en once spec.
+Total: **190 casos** en once spec.
 
 Los esquemas de [`../../schema/`](../../schema/) son el contrato legible por
 máquina de lo que estas spec describen en prosa: `configuracion.json` para lo
