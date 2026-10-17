@@ -141,6 +141,10 @@ libre.
 - **C-002-12** DADO un turno en vuelo CUANDO el estado observable se
   inspecciona tras inyectar resultados tardíos, cancelados y de otro turno
   ENTONCES el estado es idéntico al de antes de inyectarlos (`REQ-3`).
+- **C-002-13** DADO un turno agotado por presupuesto CUANDO `decide` evalúa
+  un resultado que llega después ENTONCES rechaza con razón
+  `budget_exhausted` —más precisa que `turn_cancelled`— y sin efecto
+  observable (`REQ-3`).
 
 ## Invariantes
 

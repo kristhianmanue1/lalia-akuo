@@ -456,6 +456,21 @@ test('C-002-11 el presupuesto agotado es fallo explícito, nunca éxito', () => 
   assert.deepEqual(h.snapshot(), before, 'el no-op tocó el observable');
 });
 
+// C-002-13
+test('C-002-13 la razón del no-op tras agotar el presupuesto es budget_exhausted', () => {
+  const h = createHarness();
+  const turn = h.open('listening');
+  h.invoke(() => new Promise(() => {}));
+  h.clock.advance(TURN_BUDGET_MS);
+  const late = h.deliver(turn, (effect) => {
+    effect.value('weight', 70);
+  });
+  assert.equal(late.accepted, false);
+  assert.equal(late.reason, 'budget_exhausted',
+    'la razón del no-op por presupuesto no es la precisa');
+  assert.equal(h.events.some((event) => event.type === 'value_confirmed'), false);
+});
+
 // C-002-12
 test('C-002-12 tardíos, cancelados y ajenos dejan el estado idéntico', () => {
   const h = createHarness();
