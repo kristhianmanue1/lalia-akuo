@@ -33,7 +33,7 @@ TAREA T-01 (M-C) — recomponer el paso 6 de §5 de estado.md
   Produce:  el paso 6 describe sus flujos sin número sin referente y sin
             fragmentos huérfanos de ediciones anteriores
   Steps:
-  - [ ] Reescribir el paso 6 completo: retirar «42/43» (grep verificado: sin
+  - [x] Reescribir el paso 6 completo: retirar «42/43» (grep verificado: sin
         referente en ningún documento de lalia-akuo ni de alubia; entró en
         ffd076a sin referente) y el fragmento huérfano de las líneas 162-163
         («cierra los turnos por señal real...», cabeza de oración perdida del
@@ -48,7 +48,7 @@ TAREA T-02 (E6-02) — ejemplo ejecutable de tres campos, sin voz y con costura
   Produce:  examples/tres-campos/ (página, cableo, adaptador ingenuo opcional,
             README) + prueba de humo del cableo en tests/
   Steps:
-  - [ ] Módulo de cableo sin DOM (examples/tres-campos/flujo.js): construye la
+  - [x] Módulo de cableo sin DOM (examples/tres-campos/flujo.js): construye la
         sesión con tres campos, paquete es-mx con respaldo explícito al
         PACK_ES, **voz silenciada por omisión** (`setSpeechMuted(true)`:
         sin motor medido, el speaker por omisión falla y sin silenciar el
@@ -56,7 +56,7 @@ TAREA T-02 (E6-02) — ejemplo ejecutable de tres campos, sin voz y con costura
         inyectados (fieldInterpreter/controlInterpreter de ejemplo), y
         devuelve { session, events } — verificación: node --check y que la
         prueba de humo lo importa por esa ruta
-  - [ ] Prueba de humo (tests/ejemplo-tres-campos.test.js): SIN puertos de voz
+  - [x] Prueba de humo (tests/ejemplo-tres-campos.test.js): SIN puertos de voz
         (speaker/listener por omisión) la sesión degrada a manual por su
         camino declarado (manual_input_required con su failure visible,
         C-008-16); con el cableo de flujo.js —interpreters inyectados y voz
@@ -67,19 +67,19 @@ TAREA T-02 (E6-02) — ejemplo ejecutable de tres campos, sin voz y con costura
         el gate en rojo — verificación: node --test
         tests/ejemplo-tres-campos.test.js → pass; grep «C-0(09|10|11)» en el
         archivo → sin resultados; npm test completo verde
-  - [ ] Página mínima (examples/tres-campos/index.html + app.js) con los cinco
+  - [x] Página mínima (examples/tres-campos/index.html + app.js) con los cinco
         elementos de SPEC-009 (cuatro controles + indicador de estado) y el
         anuncio por cambio de estado usando las claves de PACK_ES; el aviso
         `notice.offDeviceAudio` visible ANTES de cualquier petición de
         micrófono; importa sólo por src/index.js — verificación: node
         --check de app.js; grep de que index.html no referencia módulos de
         src/core directamente
-  - [ ] Adaptador ingenuo opcional (examples/tres-campos/voz-navegador.js):
+  - [x] Adaptador ingenuo opcional (examples/tres-campos/voz-navegador.js):
         Web Speech sin parches, con el aviso visible de que NO es el
         adaptador de SPEC-011 y que nada de él está medido — verificación:
         el ejemplo corre sin él (sólo texto) y el archivo lo declara en su
         cabecera
-  - [ ] README del ejemplo con las dos formas de correrlo (sin voz, con voz
+  - [x] README del ejemplo con las dos formas de correrlo (sin voz, con voz
         ingenua) — verificación: npm run gate verde (tamaños dentro de
         límites)
 
@@ -89,7 +89,7 @@ TAREA T-03 (E6-01) — recetas de integración en el contrato
             (variante regional con respaldo)
   Produce:  §10 «Recetas de integración» en el contrato y enlace desde README
   Steps:
-  - [ ] Recetas, cada una con su cita: (1) getPreviousValue ↔ almacenamiento
+  - [x] Recetas, cada una con su cita: (1) getPreviousValue ↔ almacenamiento
         del consumidor; (2) gramática/léxico del dominio ↔ puertos
         fieldInterpreter/controlInterpreter; (3) eventos ↔ UI (el núcleo sólo
         emite `state_changed` con `state` y `phase`: el anuncio lo monta la
@@ -102,16 +102,16 @@ TAREA T-03 (E6-01) — recetas de integración en el contrato
         paquete crudo como respaldo lanza invalid_config (sonda C de R1) —
         verificación: cada afirmación cita spec o archivo; la receta (5)
         coincide con la práctica del ejemplo de T-02
-  - [ ] README: enlazar las recetas junto al ejemplo — verificación:
+  - [x] README: enlazar las recetas junto al ejemplo — verificación:
         grep «recetas» README.md; npm run gate verde
 
 TAREA T-04 — cierre y ronda del delta
   Consumes: todas las anteriores
   Produce:  gate verde final, estado al día, plan cerrado
   Steps:
-  - [ ] npm run gate completo con las cifras nuevas — verificación: salida OK
+  - [x] npm run gate completo con las cifras nuevas — verificación: salida OK
         con el número real de pruebas
-  - [ ] estado.md: registrar E6-01/E6-02 con **satisfacción parcial
+  - [x] estado.md: registrar E6-01/E6-02 con **satisfacción parcial
         declarada** — sin voz ✓ (determinista + texto); «con voz» = vía
         ingenua NO medida, SPEC-011 pendiente; la guía de migración de E6-01
         sigue vacía por diseño (contrato §7: sin releases no hay migración) y
@@ -120,7 +120,7 @@ TAREA T-04 — cierre y ronda del delta
         §6 (casos de spec / regresiones / ejemplo), no sólo el total —
         verificación: npm test (trazabilidad) verde; grep «SPEC-009»
         docs/estado.md sigue diciendo pendiente
-  - [ ] Ronda adversarial del delta T-01..T-03 en contexto fresco —
+  - [x] Ronda adversarial del delta T-01..T-03 en contexto fresco —
         verificación: veredicto registrado en §Rondas con sus correcciones
         aplicadas si aplica
 
@@ -163,7 +163,33 @@ Correcciones aplicadas:
 7. Página: cinco elementos (cuatro controles + indicador) y
    `notice.offDeviceAudio` visible antes de cualquier micrófono.
 
-### R2 — delta de código y documentos (T-04, paso 3)
+### R2 — delta de código y documentos (17-oct-2026)
 
-Pendiente de ejecución al cierre de las tareas; veredicto y correcciones se
-registran aquí al terminar.
+Revisor independiente, contexto fresco, solo lectura, con sondas ejecutables
+(servidor real, stub de navegador, mutación equivalente sin tocar el repo).
+Veredicto: **fix-and-retry** — «el mecanismo del núcleo y las recetas del
+contrato resisten todo lo que les eché (incluido el resolve tardío tras
+cancel y la mutación)». Correcciones aplicadas:
+
+1. `voz-navegador.js` dejaba una referencia a una variable eliminada
+   (`void sintetizadorActivo`): el camino «con voz» del ejemplo rechazaba
+   en toda llamada a `listen()` con `ReferenceError` — `node --check` no lo
+   ve y el gate no ejecuta ese archivo. Eliminada; corregido además el
+   comentario que prometía distinguir permiso cuando el ternario no
+   distinguía nada.
+2. El comando del README enraizaba el servidor en `examples/tres-campos`:
+   el import `../../src/index.js` daba 404 y la página no ejecutaba JS.
+   Ahora enraiza en la raíz del repositorio, verificado con servidor real
+   (`app.js` 200, `src/index.js` 200).
+3. `estado.md` §6: la ruta de lectura se re-midió tras los ajustes (1577,
+   no 1564) y el desglose pasó al corte observable: 137 con identificador
+   `C-*` + 21 regresiones/rondas + 1 de humo.
+4. Cabecera del adaptador declara su desviación de
+   `CANCEL_CONTRACT.settlesPromise` (resuelve tras `cancel()`; el núcleo lo
+   tolera por disciplina de turno).
+
+La mutación de control (quitar `setSpeechMuted(true)` del cableo) pone la
+prueba de humo en roja — verificada por el revisor sin tocar el repo.
+
+Evidencia del cierre: `sh scripts/run-gate.sh` exit 0; servidor real 200 en
+ambos imports.

@@ -6,6 +6,9 @@
 // un consumidor conecta el motor del navegador a los puertos de SPEC-004.
 // El adaptador real, medido y con sus parches por síntoma, es etapa propia
 // del proyecto (docs/specs/SPEC-011-adaptador-web-speech-y-parches.md).
+// Desviación declarada de su parte: este listener puede resolver su promesa
+// después de cancel() (lo prohíbe CANCEL_CONTRACT.settlesPromise); el núcleo
+// lo tolera porque la disciplina de turno descarta el resultado tardío.
 
 const LANG = 'es-MX';
 
@@ -67,11 +70,10 @@ export function crearPuertosVozNavegador() {
             }
           };
           escucha.onerror = (evento) => {
-            // Ingenuo a propósito: el adaptador real mapea por síntoma
-            // (SPEC-011); aquí sólo distinguimos permiso de lo demás.
-            entrega(evento.error === 'not-allowed'
-              ? { type: 'recognition_failed' }
-              : { type: 'recognition_failed' });
+            // Ingenuo a propósito: todo error entrega recognition_failed;
+            // el adaptador real mapea por síntoma (SPEC-011).
+            void evento;
+            entrega({ type: 'recognition_failed' });
           };
           escucha.onend = () => {
             entrega(final !== null
@@ -87,7 +89,6 @@ export function crearPuertosVozNavegador() {
           }, { once: true });
           reconocimiento = escucha;
           escucha.start();
-          void sintetizadorActivo; // el estado del TTS no gobierna la escucha
         });
       },
       cancel() {

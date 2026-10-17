@@ -166,6 +166,18 @@ Python >= 3.12 fijado, superficie del paquete declarada y contrato base de
 consumo — el registro completo, con sus tres rondas adversariales, está en
 `../plans/PLAN-001-correcciones-ci-interno-y-contrato-de-consumo.md`.
 
+**PLAN-002 ejecutado (17-10-2026), con satisfacción parcial declarada:**
+E6-01/E6-02 de la propuesta del consumidor quedan cubiertos en su parte
+«sin voz» — contrato con §10 recetas de integración y ejemplo ejecutable
+`examples/tres-campos/` (determinista + texto, con prueba de humo) —. Lo
+que NO queda cubierto y por qué: «con voz» usa un adaptador ingenuo no
+medido (SPEC-011 pendiente: sin dispositivo no hay parches ni ventana); la
+guía de migración de E6-01 sigue vacía por diseño (contrato §7: sin
+releases no hay migración); y la integración por un tercero leyendo sólo
+la guía es el criterio de E6-03, del lado del consumidor, no verificable
+desde este repositorio. Registro en
+`../plans/PLAN-002-guia-ejemplo-y-deuda-documental.md`.
+
 ## 6. Qué está verificado y qué no
 
 Se dice con la misma precisión que la evidencia permite, porque un «verificado»
@@ -174,10 +186,11 @@ sin respaldo es justo lo que este método prohíbe.
 **Verificado, con su comando:**
 
 - La puerta completa en verde (`sh scripts/run-gate.sh`, con Python 3.12 del
-  venv): `check_sizes` OK con 85 archivos y ruta de lectura 1544/1600, las 66
-  pruebas del método, y `npm test` con **158 pruebas en verde** — de las
-  cuales 136 son casos de spec con su identificador y 22 son regresiones y
-  casos de las rondas.
+  venv): `check_sizes` OK con 93 archivos y ruta de lectura 1577/1600, las 66
+  pruebas del método, y `npm test` con **159 pruebas en verde** — corte
+  observable: 137 pruebas citan identificador de caso `C-*`, 21 son
+  regresiones y casos de las rondas sin identificador, y 1 es la prueba de
+  humo del ejemplo de consumidor (`PLAN-002`).
 - **La ronda adversarial del núcleo se ejecutó el 19-09-2026** con cuatro
   revisores de contexto fresco (uno por módulo contra su spec, sólo lectura,
   con sondas ejecutables). Veredicto: `fix-and-retry`; los BLOCKER y HIGH se

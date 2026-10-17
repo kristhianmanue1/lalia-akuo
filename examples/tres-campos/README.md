@@ -6,11 +6,14 @@ hay motor. Sin construcción y sin dependencias.
 
 ## Correrlo
 
-**Con página (con o sin voz según el navegador):**
+**Con página (con o sin voz según el navegador):** el servidor debe
+enraizar en la raíz del repositorio — la página importa `src/index.js` por
+ruta relativa y con el servidor enraizado en este directorio ese import da
+404:
 
 ```bash
-python3 -m http.server 8000 --directory examples/tres-campos
-# abre http://localhost:8000
+python3 -m http.server 8000          # desde la raíz del repositorio
+# abre http://localhost:8000/examples/tres-campos/
 ```
 
 El aviso de audio fuera del dispositivo es visible antes de cualquier
