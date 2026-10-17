@@ -1,8 +1,9 @@
-#!/usr/bin/env sh
-# Gate local de Skevi. Se instala con: git config core.hooksPath scripts/hooks
-# Verificación rápida previa al push; el gate autoritativo es el CI (ADR-034).
-set -e
+#!/bin/sh
+# Gate local en el push: los tres componentes con intérprete fijado.
+# Procedencia: docs/estandar-diseno-software-github.md §5.4 —checks en verde
+# antes del merge—; el CI de este proyecto es local (17-oct-2026: GitHub se
+# queda sin créditos para Actions). El gate autoritativo es este script.
+set -eu
 
 repo_root="$(git rev-parse --show-toplevel)"
-python3 "$repo_root/scripts/check_sizes.py"
-python3 -m unittest discover -s "$repo_root/tests"
+sh "$repo_root/scripts/run-gate.sh"

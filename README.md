@@ -29,7 +29,7 @@ de retención. Si aparece una, es un defecto de este repositorio.
 |---|---|---|
 | F0 | Problema, resultado observable, requisitos y no objetivos | **Cerrada** — `docs/product/plan.md` |
 | F1 | Contratos del núcleo y fronteras | **Cerrada** — `docs/product/definicion-tecnica.md` y sus cuatro hermanos |
-| E1 | Contrato de comportamiento, caso por caso | **Escrita** — `docs/specs/`, 185 casos; índice en `docs/specs/00-INDICE.md` |
+| E1 | Contrato de comportamiento, caso por caso | **Escrita** — `docs/specs/`, 192 casos; índice en `docs/specs/00-INDICE.md` |
 | Implementación | El núcleo, contra los casos de E1 | **En curso** — ocho de las once spec implementadas y probadas |
 
 **Para retomar el trabajo, lee [`docs/estado.md`](docs/estado.md).** Ahí está el
@@ -44,15 +44,15 @@ No hay paso de construcción: es JavaScript de módulos ES que corre tal cual en
 el navegador y en Node, sin dependencias de ejecución.
 
 ```bash
-npm test                               # pruebas de la biblioteca
-python3 scripts/check_sizes.py         # estructura, tamaños y ruta de lectura
-python3 -m unittest discover -s tests  # pruebas del gate
-npm run gate                           # los tres, en orden
+npm test                # pruebas de la biblioteca
+npm run gate            # los tres componentes, con Python >= 3.12 fijado
+sh scripts/run-gate.sh  # lo mismo, sin npm
 ```
 
-Requisitos del entorno, comprobados: Node v24.15.0, npm 11.12.1 y
-Python 3.9.6. El gate y sus pruebas usan sólo la biblioteca estándar de
-Python; la biblioteca no declara dependencias de ejecución.
+Requisitos del entorno: Node >= 18 (probado en v24.15.0) y Python >= 3.12
+(probado en 3.12.12, el `.venv` del proyecto). El gate elige el venv si
+existe y falla cerrado con un intérprete menor: el requisito no se degrada a
+«cualquiera que haya». La biblioteca no declara dependencias de ejecución.
 
 Para conectar el gate al push local, una vez por clon:
 
@@ -62,6 +62,40 @@ git config core.hooksPath scripts/hooks
 
 La activación es configuración local y no viaja con el clon: un clon fresco
 pierde el gate de push en silencio si no se repite.
+
+## Consumo
+
+El modo vigente es la **copia desde el repositorio**, sin registro de
+paquetes (`ADR-010`): importa por ruta; cada commit copiado compila y pasa
+sus pruebas. La entrada única es `src/index.js`.
+
+```js
+import { createVoiceSession, PACK_ES } from '<ruta-a-lalia-akuo>/src/index.js';
+
+const session = createVoiceSession({
+  fields: [{ id: 'peso', type: 'number', unit: 'kg', promptKey: 'form.peso' }],
+  language: {
+    pack: {
+      language: 'es',
+      texts: {
+        ...PACK_ES.texts,
+        'form.peso': '¿Cuánto pesas?',
+        'form.peso.readback': 'Confirmas {value} {unit}.',
+        'form.peso.saved': 'Guardado {value} {unit}.',
+        'aviso.manual': 'Continúa por texto.',
+      },
+    },
+  },
+  policy: { degradation: { noticeKey: 'aviso.manual' } },
+  onEvent(event) { /* el catálogo cerrado vive en schema/eventos.json */ },
+});
+
+await session.start();
+```
+
+La superficie pública completa, el ciclo de vida, las garantías y los
+no-objectivos por canal están en el
+[contrato de consumo](docs/product/contrato-de-consumo.md).
 
 ## Estructura
 
@@ -99,9 +133,10 @@ canon y **su procedencia está registrada**, con digest y versión, en `.skevi/`
 
 Lo que este proyecto cambió respecto al canon está declarado ahí y en
 `skevi-gate.json`: se instaló `check_sizes.py` pero no `check_plans.py` ni
-`check_reports.py`, porque todavía no hay planes de implementación ni reportes
-de dos capas que verificar, y `scripts/hooks/pre-push` es la versión recortada
-que corre sólo lo que existe.
+`check_reports.py` —los planes viven en `docs/plans/` y los reportes de dos
+capas viajan en la conversación, sin verificación de script todavía—, y
+`scripts/hooks/pre-push` delega en `run-gate.sh`, que corre los tres
+componentes con el intérprete fijado.
 
 ## Qué no es
 
