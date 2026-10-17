@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>lalia-akuo — ejemplo de tres campos</title>
+  <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+  <main>
+    <h1>Ejemplo: tres campos por voz</h1>
+
+    <!-- Aviso de SPEC-009: visible antes de cualquier petición de micrófono. -->
+    <p id="aviso-audio" role="note">El audio puede procesarse fuera de este
+      dispositivo.</p>
+
+    <!-- Los cinco elementos de SPEC-009: cuatro controles + indicador. -->
+    <div id="controles">
+      <button id="iniciar" type="button">Iniciar</button>
+      <button id="silenciar-micro" type="button" aria-pressed="false">Silenciar el micrófono</button>
+      <button id="silenciar-voz" type="button" aria-pressed="false">Silenciar la voz</button>
+      <form id="entrada-texto">
+        <label for="texto">Escribir el valor</label>
+        <input id="texto" type="text" autocomplete="off" disabled>
+        <button type="submit" disabled>Enviar</button>
+      </form>
+      <p id="indicador" role="status" aria-live="polite">En espera</p>
+    </div>
+
+    <section id="dialogo" aria-label="Diálogo" aria-live="polite"></section>
+
+    <script type="module" src="app.js"></script>
+  </main>
+</body>
+</html>

@@ -1,0 +1,10 @@
+/* Estilo mínimo del ejemplo: legible y sin más. */
+body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 34rem; }
+#aviso-audio { background: #f4f1e8; border-left: 4px solid #8a7b4f; padding: .6rem .8rem; }
+#controles { display: grid; gap: .6rem; margin: 1rem 0; }
+#indicador { font-weight: 600; margin: 0; }
+#dialogo p { margin: .25rem 0; }
+#dialogo .agente { color: #235; }
+#dialogo .persona { color: #553; margin-left: 1.5rem; }
+#dialogo .aviso { color: #833; }
+#dialogo .guardado { font-weight: 600; color: #273; }
