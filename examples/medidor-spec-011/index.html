@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Medidor SPEC-011 — lalia-akuo</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 46rem; margin: 1rem auto; padding: 0 .8rem; }
+    fieldset { border: 1px solid #bbb; border-radius: .4rem; margin-bottom: .8rem; }
+    button { margin: .2rem .3rem .2rem 0; padding: .4rem .7rem; }
+    #registro { white-space: pre-wrap; background: #f4f4f4; padding: .6rem; border-radius: .3rem; min-height: 6rem; font-size: .85rem; }
+    #exportacion { width: 100%; height: 4rem; font-family: ui-monospace, monospace; font-size: .7rem; }
+    .aviso { background: #fff3cd; padding: .5rem .7rem; border-radius: .3rem; }
+  </style>
+</head>
+<body>
+  <h1>Medidor SPEC-011</h1>
+  <p class="aviso">Instrumental de medición, no producto. Sirve desde la
+  raíz del repositorio: <code>python3 -m http.server</code> y abre
+  <code>/examples/medidor-spec-011/</code>. Protocolo completo en el
+  README del directorio.</p>
+
+  <fieldset>
+    <legend>Celda de la matriz (ADR-009)</legend>
+    <label>Celda:
+      <select id="celda"></select>
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Costura de activación (SPEC-009)</legend>
+    <label><input type="checkbox" id="activada"> voz activada por gesto
+    (tócala antes de medir locución o escucha; la sonda P-05 va aparte,
+    sin marcar)</label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Flujos</legend>
+    <button id="locucion">Locución (P-01/02/04/06)</button>
+    <button id="escucha">Escucha (P-07/10/11/12)</button>
+    <button id="cancelacion">Cancelación (P-03/09)</button>
+    <button id="idioma-sin-voz">Idioma sin voz (P-13)</button>
+    <p>El permiso denegado (P-14) se mide denegando el micrófono cuando
+    el navegador lo pida durante la escucha.</p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Registro</legend>
+    <div id="registro"></div>
+    <button id="exportar">Exportar JSON compacto</button>
+    <textarea id="exportacion" readonly placeholder="JSON compacto del registro"></textarea>
+  </fieldset>
+
+  <script type="module" src="./medidor.js"></script>
+</body>
+</html>
