@@ -5,6 +5,8 @@
 // el registro vivo de resultados. La página (medidor.js / index.html)
 // consume esto y cablea el motor real del navegador; el registro se
 // exporta como JSON compacto para pegarlo en el informe de medición.
+// Nada aquí se declara medido: los desenlaces los pone la página con lo
+// observado, y «medida» sólo significa que se recorrió todo lo aplicable.
 
 export const CELLS = Object.freeze([
   Object.freeze({ id: 'safari-macos', engine: 'webkit', label: 'Safari · macOS' }),
@@ -15,14 +17,15 @@ export const CELLS = Object.freeze([
   Object.freeze({ id: 'edge-mobile', engine: 'blink', label: 'Edge · móvil' }),
 ]);
 
-// Cada escenario dice qué medir y qué desenlace acepta el parche. El
+// Cada escenario dice qué medir y qué desenlaces acepta el parche. El
 // identificador es el del parche (P-01..P-14), no de navegador: un parche
-// de Blink cubre Chrome y Edge con una sola condición (SPEC-011).
+// de Blink cubre Chrome y Edge con una sola condición (SPEC-011). Los
+// desenlaces que NO están en accept son el síntoma vivo del parche.
 export const SCENARIOS = Object.freeze([
   Object.freeze({
-    id: 'P-01', engine: 'both', flow: 'speaker',
+    id: 'P-01', engine: 'both', flow: 'speaker-first',
     name: 'voces no listas',
-    how: 'primera locución tras carga fresca, antes de que getVoices() llene',
+    how: 'sólo la primera locución de la carga fresca, antes de que getVoices() llene',
     accept: ['done', 'error'],        // watchdog aquí sería el síntoma vivo
   }),
   Object.freeze({
@@ -34,8 +37,8 @@ export const SCENARIOS = Object.freeze([
   Object.freeze({
     id: 'P-03', engine: 'both', flow: 'cancel',
     name: 'cierre de una locución cancelada',
-    how: 'iniciar locución y cancelarla a mitad; luego locutar de nuevo',
-    accept: ['done'],
+    how: 'locución cancelada a mitad, 2 s de espera, y locución nueva: la cancelada debe quedar sin resolver y la nueva llegar a done',
+    accept: ['done'],                 // 'done-late' = la cancelada cerró tarde
   }),
   Object.freeze({
     id: 'P-04', engine: 'both', flow: 'speaker',
@@ -46,32 +49,32 @@ export const SCENARIOS = Object.freeze([
   Object.freeze({
     id: 'P-05', engine: 'webkit', flow: 'probe',
     name: 'primera locución sin activación',
-    how: 'SONDA APARTE: carga fresca sin tocar nada; locución automática',
+    how: 'SONDA APARTE (?probe=p05): carga fresca sin tocar nada; locución automática',
     accept: ['error'],                // en el acto; nunca watchdog ni done
   }),
   Object.freeze({
     id: 'P-06', engine: 'webkit', flow: 'speaker',
     name: 'cola de síntesis en pausa',
-    how: 'primera locución de la sesión tras varias pestañas con voz',
+    how: 'OBSERVACIONAL: primera locución tras dejar voz en pausa en otras pestañas; la condición no se fuerza',
     accept: ['done'],
   }),
   Object.freeze({
     id: 'P-07', engine: 'webkit', flow: 'listener',
     name: 'escucha que no se reinicia',
-    how: 'escucha continua: callar unos segundos y volver a hablar',
-    accept: ['speech', 'no_speech'],
+    how: 'habla, calla unos segundos y vuelve a hablar: la segunda frase debe llegar',
+    accept: ['speech'],               // no_speech aquí sería el síntoma vivo
   }),
   Object.freeze({
-    id: 'P-08', engine: 'webkit', flow: 'listener',
+    id: 'P-08', engine: 'webkit', flow: 'listener-second',
     name: 'arranque sobre instancia activa',
-    how: 'dos escuchas seguidas en la misma página sin recargar',
-    accept: ['speech', 'no_speech', 'recognition_failed'],
+    how: 'dos escuchas seguidas en la misma página sin recargar, con permiso concedido: la segunda debe escuchar',
+    accept: ['speech', 'no_speech'],  // recognition_failed con permiso OK, síntoma
   }),
   Object.freeze({
-    id: 'P-09', engine: 'webkit', flow: 'cancel',
+    id: 'P-09', engine: 'webkit', flow: 'listen-cancel',
     name: 'cancelación propia reportada como error',
-    how: 'cancelar la escucha a mitad; no debe contar como error del turno',
-    accept: ['cancelled-clean'],
+    how: 'escucha cancelada a mitad: la promesa debe quedar sin resolver ni error',
+    accept: ['cancelled-clean'],      // 'resolved' = el aborto contó como desenlace
   }),
   Object.freeze({
     id: 'P-10', engine: 'webkit', flow: 'listener',
@@ -89,7 +92,7 @@ export const SCENARIOS = Object.freeze([
     id: 'P-12', engine: 'blink', flow: 'listener',
     name: 'resultados interinos',
     how: 'escucha hablando despacio: los parciales deben llegar',
-    accept: ['speech'],
+    accept: ['speech'],               // 'speech-no-partials' = síntoma vivo
   }),
   Object.freeze({
     id: 'P-13', engine: 'both', flow: 'speaker',
@@ -98,9 +101,9 @@ export const SCENARIOS = Object.freeze([
     accept: ['error'],                // declarado; nunca done ni watchdog
   }),
   Object.freeze({
-    id: 'P-14', engine: 'both', flow: 'listener',
+    id: 'P-14', engine: 'both', flow: 'listener-denied',
     name: 'permiso de micrófono denegado',
-    how: 'denegar el micrófono cuando el navegador lo pregunte',
+    how: 'escucha con el micrófono denegado: debe resolver recognition_failed',
     accept: ['recognition_failed'],
   }),
 ]);
@@ -110,9 +113,15 @@ export function emptyRegistry() {
   for (const scenario of SCENARIOS) patches[scenario.id] = null;
   const cells = {};
   for (const cell of CELLS) {
-    cells[cell.id] = { measured: false, patches: { ...patches } };
+    cells[cell.id] = { patches: { ...patches } };
   }
-  return { schema: 'lalia-akuo/medicion-spec-011/v1', registeredAt: null, cells };
+  return {
+    schema: 'lalia-akuo/medicion-spec-011/v1',
+    registeredAt: null,
+    environment: { userAgent: null, platform: null },
+    probeP05: { measured: false, outcome: null, userAgent: null, at: null },
+    cells,
+  };
 }
 
 // El registro viaja compacto: una línea, sin embellecer, para que la
@@ -133,4 +142,19 @@ export function scenariosForCell(cellId) {
   const cell = CELLS.find((c) => c.id === cellId);
   if (!cell) return [];
   return SCENARIOS.filter((s) => s.engine === 'both' || s.engine === cell.engine);
+}
+
+// «Medida» es una consecuencia del recorrido, no un botón: una celda
+// cuenta como medida sólo cuando todos sus parches aplicables tienen
+// desenlace observado. Cualquier hueco la deja sin medir.
+export function coverageOf(registry, cellId) {
+  const cell = registry.cells[cellId];
+  if (!cell) return { applicable: 0, recorded: 0, complete: false };
+  const applicable = scenariosForCell(cellId);
+  const recorded = applicable.filter((s) => cell.patches[s.id] !== null);
+  return {
+    applicable: applicable.length,
+    recorded: recorded.length,
+    complete: recorded.length === applicable.length,
+  };
 }

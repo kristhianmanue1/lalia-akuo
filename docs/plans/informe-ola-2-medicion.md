@@ -35,10 +35,12 @@ fecha y el dispositivo; nada más)
 
 ## Reglas de llenado
 
-1. Una celda se marca medida sólo con su JSON pegado arriba y la fecha.
+1. Una celda se marca medida sólo con su JSON pegado arriba, la fecha,
+   y cobertura completa de sus parches aplicables (el JSON la lleva).
 2. Un parche con desenlace fuera de `accept` queda `fail` en el JSON:
    no se corrige a mano; se investiga contra `SPEC-011`.
-3. La sonda P-05 se registra aparte de los flujos activados.
+3. La sonda P-05 se registra aparte (transversal, con `userAgent`),
+   nunca en la celda del select ni con activación previa.
 4. El piso de versiones por ventana (`ADR-011`) se deriva en la
    publicación, no aquí; aquí se registra el `userAgent` tal cual lo
    reporta la página.
