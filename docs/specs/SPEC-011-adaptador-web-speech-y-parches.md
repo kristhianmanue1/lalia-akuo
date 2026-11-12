@@ -105,8 +105,11 @@ P-01 · engine: both · voces no listas
 
 P-02 · engine: both · la utterance se pierde antes del cierre
   Síntoma: no llega el evento terminal y la locución queda en vuelo.
-  Disparo: la utterance no está retenida por el adaptador mientras habla.
-  Parche: retención explícita hasta el cierre o la cancelación.
+  Disparo: la utterance llega al motor sin su idioma o sin sus
+    manejadores asignados, o no está retenida mientras habla.
+  Parche: prepararla por completo antes de `speak` y retenerla hasta el
+    cierre o la cancelación; la preparación es lo observable con dobles
+    y la retención física se mide en dispositivo (Ola 2).
   Prueba: C-011-05.
 
 P-03 · engine: both · cierre de una locución cancelada
@@ -128,9 +131,11 @@ P-04 · engine: both · cierre duplicado
 P-05 · engine: webkit · primera locución sin activación
   Síntoma: la primera locución no arranca y no llega evento terminal.
   Disparo: `say()` sin activación de usuario previa en móvil.
-  Parche: resolver `error` en el acto —nunca `watchdog` ni `done`— y
-    exponer que la voz exige activación; la interfaz de `SPEC-009` presenta
-    el aviso y recoge esa activación.
+  Parche: resolver `error` en el acto —nunca `watchdog` ni `done`—; la
+    exposición de que la voz exige activación es la costura de
+    `SPEC-009` —la vista presenta el aviso y recoge la activación— y se
+    materializa en la Ola 2 de `PLAN-003`; lo testeable aquí es el
+    `error` en el acto.
   Prueba: C-011-08.
 
 P-06 · engine: webkit · síntesis que arranca en pausa
@@ -163,7 +168,8 @@ P-09 · engine: webkit · cancelación propia reportada como error
 
 P-10 · engine: webkit · fin de escucha sin resultado
   Síntoma: la escucha queda sin habla y sin cierre.
-  Disparo: `end` sin `result` con el turno abierto.
+  Disparo: `end` sin `result` con el turno abierto y sin presupuesto
+    para re-escuchar, o presupuesto agotado sin haber oído habla.
   Parche: resolver el silencio como caso propio (`no_speech`), nunca como
     cero ni como éxito.
   Prueba: C-011-13.
@@ -171,7 +177,8 @@ P-10 · engine: webkit · fin de escucha sin resultado
 P-11 · engine: blink · resultado final reemitido
   Síntoma: la misma frase se interpreta dos veces.
   Disparo: segundo `onresult` con el mismo índice y resultado final.
-  Parche: deduplicar por índice; el segundo es no-op.
+  Parche: cierre único e idempotente de la entrega: el duplicado es
+    no-op porque la entrega ya se hizo (mecanismo unificado con P-04).
   Prueba: C-011-14.
 
 P-12 · engine: blink · resultados interinos no pedidos
@@ -195,6 +202,15 @@ P-14 · engine: both · permiso de micrófono denegado
     manual; nunca declarar éxito.
   Prueba: C-011-17.
 ```
+
+**Enmienda de la Ola 1 (12-11-2026, ronda R2 de
+`../plans/PLAN-003-adaptador-spec-011-por-olas.md`).** P-02 declara qué
+es observable con dobles —la preparación completa antes de `speak`— y qué
+se mide en dispositivo —la retención física—; P-05 fija su exposición como
+costura de `SPEC-009` materializada en la Ola 2; P-10 precisa el disparo
+con el presupuesto vencido, lo que resuelve la frontera con P-07
+—re-escucha mientras hay presupuesto, silencio cuando ya no lo hay—; P-11
+unifica su mecanismo con el cierre único de P-04.
 
 **Declaración de capacidades.** El adaptador exporta
 `ADAPTER_CAPABILITIES`, congelado y legible sin leer el código, que declara
@@ -287,10 +303,12 @@ retirar el parche lo deja en rojo.
   sólo anuncia voces al disparar `voiceschanged` CUANDO se habla ENTONCES la
   locución espera la voz dentro del presupuesto y llega a `done` con una voz
   declarada (`P-01`).
-- **C-011-05** DADO un doble que sólo emite el evento terminal si el
-  adaptador conserva la referencia de la utterance CUANDO se habla ENTONCES
-  el resultado es `done`; la prueba falla si la referencia no se retiene
-  (`P-02`).
+- **C-011-05** DADO un doble que sólo emite el evento terminal si la
+  utterance llegó a `speak` con su idioma y sus manejadores ya asignados
+  —la preparación que la retención exige— CUANDO se habla ENTONCES el
+  resultado es `done`; la retención física hasta el cierre se mide en
+  dispositivo (Ola 2): sin recolector expuesto no es observable aquí
+  (`P-02`, enmienda R2 de `PLAN-003`).
 - **C-011-06** DADO un doble que emite el cierre de la locución cancelada
   después de iniciada la siguiente CUANDO llega ese cierre ENTONCES es
   no-op y la locución vigente no se cierra (`P-03`).

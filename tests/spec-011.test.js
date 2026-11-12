@@ -149,6 +149,10 @@ test('C-011-01 say resuelve done/error/watchdog y sólo el terminal real es done
   const segunda = speaker.say('hola', request().request);
   engine.synthesis.emitError();
   assert.equal(await segunda, 'error');          // declarado, sin rechazo
+  const roto = makeEngine();                     // motor que lanza al construir:
+  roto.Utterance = class { constructor() { throw new Error('constructor-roto'); } };
+  const { speaker: speakerRoto } = armar(roto, fakeClock());
+  assert.equal(await speakerRoto.say('hola', request().request), 'error');
 });
 
 test('C-011-02 sin terminal y con voz, el presupuesto agotado es watchdog', async () => {
@@ -174,6 +178,11 @@ test('C-011-03 el silencio es no_speech y el error de motor recognition_failed',
   const fallo = listener.listen(segunda.request, {});
   engine.emitRecognitionError('network');
   assert.deepEqual(await fallo, { type: 'recognition_failed' });
+  const roto = makeEngine();                     // motor que lanza al construir:
+  roto.Recognition = class { constructor() { throw new Error('roto'); } };
+  const { listener: listenerRoto } = armar(roto, clock);
+  assert.deepEqual(await listenerRoto.listen(request().request, {}),
+    { type: 'recognition_failed' });             // tampoco rechaza
 });
 
 test('C-011-04 voces que llegan tarde por voiceschanged se esperan (P-01)', async () => {
@@ -217,6 +226,16 @@ test('C-011-06 el terminal de una locución cancelada no cierra la siguiente (P-
   assert.equal(await pendiente(segunda), 'pending'); // …ni a la vigente
   engine.synthesis.emitEnd();
   assert.equal(await segunda, 'done');            // la vigente cierra sola
+  // Y una locución desplazada sin cancel tampoco habla con voces tardías:
+  const clockD = fakeClock();
+  const engineD = makeEngine({ voices: [] });
+  const { speaker: speakerD } = armar(engineD, clockD);
+  speakerD.say('primera', request().request);     // espera voces…
+  speakerD.say('segunda', request().request);     // …y queda desplazada
+  engineD.synthesis.voices = [VOZ_ES];
+  engineD.synthesis.emitVoicesChanged();
+  assert.equal(engineD.synthesis.speakCalls.length, 1);
+  assert.equal(engineD.synthesis.last.text, 'segunda');  // sólo la vigente
 });
 
 test('C-011-07 el segundo evento terminal de la misma locución es no-op (P-04)', async () => {
@@ -274,12 +293,19 @@ test('C-011-11 la segunda escucha arranca sin lanzar sobre la activa (P-08)', as
   const clock = fakeClock();
   const engine = makeEngine();
   const { listener } = armar(engine, clock);
-  listener.listen(request(30000).request, {});
+  const primera = listener.listen(request(30000).request, {});
   assert.equal(engine.instances.length, 1);
   assert.equal(engine.instances[0].active, true);
-  assert.doesNotThrow(() => {
-    listener.listen(request(30000).request, {});   // instancia nueva por escucha
-  });
+  let lanzo = false;
+  try {
+    const segunda = listener.listen(request(30000).request, {});
+    lanzo = true;                                 // instancia nueva por escucha
+    clock.advance(30000);                         // vence el presupuesto
+    assert.equal(await pendiente(primera), 'pending');  // la desplazada calla
+    assert.deepEqual(await segunda, { type: 'no_speech' });  // la vigente, por su reloj
+  } finally {
+    assert.ok(lanzo, 'la segunda escucha no lanzó');
+  }
   assert.equal(engine.instances[1].started, 1);
 });
 
@@ -338,6 +364,7 @@ test('C-011-15 los interinos llegan a onPartial con interimResults declarado (P-
   assert.equal(engine.instances[0].interimResults, true);  // declarados
   engine.emitResult(0, 'cua', false, 0.4);
   engine.emitResult(0, 'cuarenta', false, 0.5);
+  engine.emitResult(0, 'cuarenta', false, 0.5);   // parcial repetido: no duplica
   engine.emitResult(0, 'cuarenta y dos', true, 0.9);
   assert.deepEqual(await promesa, {
     type: 'speech', text: 'cuarenta y dos', confidence: 0.9,
@@ -393,6 +420,18 @@ test('C-011-18 tras cancel() ningún evento posterior del motor produce efecto',
   assert.equal(await pendiente(hablando), 'pending');
   assert.equal(await pendiente(escuchando), 'pending');
   assert.equal(efectos, 0);                       // ninguno con efecto
+  // Y la señal abortada sin cancel(): el vigilante tampoco resuelve ni anuncia
+  const { controller: c2, request: r2 } = request(30000);
+  let efectos2 = 0;
+  const escucha2 = listener.listen(r2, {
+    onPartial: () => { efectos2 += 1; },
+    onNoSpeech: () => { efectos2 += 1; },
+    onError: () => { efectos2 += 1; },
+  });
+  c2.abort();
+  clock.advance(30000);
+  assert.equal(await pendiente(escucha2), 'pending');
+  assert.equal(efectos2, 0);                      // nada tras la cancelación
 });
 
 test('C-011-19 PATCHES declara id, engine, symptom, trigger y test por entrada', () => {

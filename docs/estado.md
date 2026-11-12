@@ -172,7 +172,7 @@ E6-01/E6-02 de la propuesta del consumidor quedan cubiertos en su parte
 «sin voz» — contrato con §10 recetas de integración y ejemplo ejecutable
 `examples/tres-campos/` (determinista + texto, con prueba de humo) —. Lo
 que NO queda cubierto y por qué: «con voz» usa un adaptador ingenuo no
-medido (SPEC-011 pendiente: sin dispositivo no hay parches ni ventana); la
+medido (SPEC-011 entonces pendiente: sin dispositivo no hay parches ni ventana); la
 guía de migración de E6-01 sigue vacía por diseño (contrato §7: sin
 releases no hay migración); y la integración por un tercero leyendo sólo
 la guía es el criterio de E6-03, del lado del consumidor, no verificable
@@ -203,8 +203,8 @@ sin respaldo es justo lo que este método prohíbe.
   98 archivos y ruta de lectura 1594/1600, las 66 del método y las 159
   de la biblioteca; registro por commit en `../plans/informe-ola-0.md`.
 - La Ola 1 (T-01) el 12-11-2026: adaptador con dobles, 25 casos de
-  SPEC-011 y mutación de muestra verificada (quitar parche → rojo);
-  registro en `../plans/informe-ola-1.md`.
+  SPEC-011 y mutación de muestra (P-06 fuera → C-011-09 en rojo), con la
+  generalización por parche registrada en `../plans/informe-ola-1.md`.
 
 - La puerta completa en verde (`sh scripts/run-gate.sh`, con Python 3.12 del
   venv): `check_sizes` OK con 93 archivos y ruta de lectura 1577/1600, las 66
@@ -225,7 +225,7 @@ sin respaldo es justo lo que este método prohíbe.
 - Las cuatro pruebas de trazabilidad: cada caso de las spec implementadas tiene
   su prueba, ninguna prueba se apoya en un caso inexistente, el estado declarado
   coincide con lo probado, y el índice declara el mismo número de casos que las
-  spec (192 casos en once spec).
+  spec (192 casos entonces; 193 desde la Ola 1 de PLAN-003).
 - Que el núcleo no abre red, no persiste, no escribe almacenamiento ni toca el
   DOM: comprobado **sobre el código** buscando `fetch`, `XMLHttpRequest`,
   `WebSocket`, `localStorage`, `indexedDB`, `document`, `window` y `console`.

@@ -10,7 +10,6 @@
 // síntoma, su condición de disparo y el caso que los prueba.
 
 import { ConfigError } from '../core/policy.js';
-import { SPEECH_BUDGET_MS } from '../core/ports.js';
 
 const RUNTIME_KEYS = ['schedule', 'cancelSchedule'];
 
@@ -86,7 +85,7 @@ export const PATCHES = Object.freeze([
   Object.freeze({
     id: 'P-02', engine: 'both', test: 'C-011-05',
     symptom: 'la utterance se pierde antes del cierre y no llega el terminal',
-    trigger: 'la utterance no está preparada ni retenida por el adaptador',
+    trigger: 'llega a speak sin idioma o sin manejadores, o no está retenida',
   }),
   Object.freeze({
     id: 'P-03', engine: 'both', test: 'C-011-06',
@@ -126,7 +125,7 @@ export const PATCHES = Object.freeze([
   Object.freeze({
     id: 'P-10', engine: 'webkit', test: 'C-011-13',
     symptom: 'fin de escucha sin habla ni cierre',
-    trigger: 'end sin result con el turno abierto y el presupuesto agotado',
+    trigger: 'end sin result sin presupuesto para re-escuchar, o presupuesto agotado sin habla',
   }),
   Object.freeze({
     id: 'P-11', engine: 'blink', test: 'C-011-14',
@@ -197,25 +196,36 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
   }
 
   const speaker = {
-    // SPE-003/SPEC-011: resuelve 'done' | 'error' | 'watchdog' y nunca rechaza.
+    // SPE-003/SPEC-011: resuelve 'done' | 'error' | 'watchdog' y nunca
+    // rechaza — tampoco si el propio motor lanza al construir su superficie.
     say(text, request) {
       return new Promise((resolve) => {
-        if (!engine || !engine.synthesis || typeof engine.Utterance !== 'function') {
-          resolve('error');       // sin superficie de voz: fallo declarado
-          return;
-        }
-        if (!request || !Number.isFinite(request.budgetMs) || request.budgetMs <= 0) {
-          resolve('error');       // contrato roto: fail-closed, nunca inventa tope
-          return;
-        }
-        const state = {
-          settled: false,
-          generation: ++speakGeneration,
-          timer: null,
-          voiceReady: false,
-          detach: null,
+        const freezePrevious = () => {
+          const previous = activeSpeak;
+          if (previous && !previous.settled) {
+            if (previous.timer !== null) clock.cancelSchedule(previous.timer);
+            if (previous.detach) previous.detach();
+            previous.settled = true;           // congela sin resolver
+          }
         };
-        activeSpeak = state;
+        try {
+          if (!engine || !engine.synthesis || typeof engine.Utterance !== 'function') {
+            resolve('error');       // sin superficie de voz: fallo declarado
+            return;
+          }
+          if (!request || !Number.isFinite(request.budgetMs) || request.budgetMs <= 0) {
+            resolve('error');       // contrato roto: fail-closed, nunca inventa tope
+            return;
+          }
+          freezePrevious();         // P-03: una locución superseded no vive
+          const state = {
+            settled: false,
+            generation: ++speakGeneration,
+            timer: null,
+            voiceReady: false,
+            detach: null,
+          };
+          activeSpeak = state;
         const settle = (result) => {
           if (state.settled) return;                  // P-04: cierre idempotente
           state.settled = true;
@@ -232,6 +242,7 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
         }, request.budgetMs);
 
         const speakNow = () => {
+          if (state.settled || state.generation !== speakGeneration) return;
           const voice = pickVoice(getVoices(), prefix, preferredURI);
           if (!voice) {
             settle('error');      // P-13: sin voz para el idioma, en el acto
@@ -244,7 +255,13 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
           }
           try { engine.synthesis.cancel(); } catch { /* best-effort del motor */ }
           // P-02: preparar la utterance por completo y retenerla.
-          const utterance = new engine.Utterance(String(text));
+          let utterance;
+          try {
+            utterance = new engine.Utterance(String(text));
+          } catch {
+            settle('error');      // motor roto: fallo declarado, nunca rechazo
+            return;
+          }
           utterance.lang = language;
           if (voice) utterance.voice = voice;
           utterance.onend = () => {
@@ -269,9 +286,12 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
           // P-01: esperar voiceschanged dentro del presupuesto del turno;
           // si el presupuesto se agota sin voz, el vigilante resuelve error.
           state.detach = onVoicesChanged(engine.synthesis, () => {
-            if (state.settled) return;
+            if (state.settled || state.generation !== speakGeneration) return;
             speakNow();
           });
+        }
+        } catch {
+          resolve('error');        // última línea de defensa: nunca rechaza
         }
       });
     },
@@ -299,10 +319,12 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
   }
 
   const listener = {
-    // SPE-004: resuelve ListeningResult; no rechaza por reconocimiento.
+    // SPE-004: resuelve ListeningResult; no rechaza por reconocimiento —
+    // tampoco si el propio motor lanza al construir su superficie.
     listen(request, callbacks) {
       return new Promise((resolve) => {
         const cb = callbacks || {};
+        try {
         if (!engine || typeof engine.Recognition !== 'function') {
           resolve({ type: 'recognition_failed' });
           return;
@@ -311,12 +333,20 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
           resolve({ type: 'recognition_failed' });
           return;
         }
+        // P-08: la escucha que desplaza a otra congela sus efectos: su
+        // vigilante muerto no puede abortar la instancia vigente.
+        const previous = activeListen;
+        if (previous && !previous.settled) {
+          if (previous.timer !== null) clock.cancelSchedule(previous.timer);
+          if (previous.detachSignal) previous.detachSignal();
+          previous.cancelled = true;
+          previous.settled = true;
+        }
         const state = {
           settled: false,
           cancelled: false,
           generation: ++listenGeneration,
           timer: null,
-          finalIndex: -1,
           lastPartial: '',
           signal: request.signal || null,
           detachSignal: null,
@@ -325,6 +355,14 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
         const signalAborted = () => !!(state.signal && state.signal.aborted);
         const finish = (result, announce) => {
           if (state.settled) return;
+          if (state.cancelled) {
+            // Cancelada (por señal o por desplazamiento): ni resultado ni
+            // callbacks — lo posterior a la cancelación es no-op (SPEC-004).
+            state.settled = true;
+            if (state.timer !== null) clock.cancelSchedule(state.timer);
+            if (state.detachSignal) state.detachSignal();
+            return;
+          }
           state.settled = true;
           if (state.timer !== null) clock.cancelSchedule(state.timer);
           if (state.detachSignal) state.detachSignal();
@@ -345,7 +383,13 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
         const startSegment = () => {
           if (state.settled || state.cancelled || signalAborted()) return;
           stopRecognition();                   // P-08: una instancia por tramo
-          const recognition = new engine.Recognition();
+          let recognition;
+          try {
+            recognition = new engine.Recognition();
+          } catch {
+            finish({ type: 'recognition_failed' }, 'error');
+            return;
+          }
           activeRecognition = recognition;
           recognition.lang = language;
           recognition.continuous = false;
@@ -363,8 +407,8 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
               if (!alternative || typeof alternative.transcript !== 'string') continue;
               const transcript = alternative.transcript.trim();
               if (result.isFinal) {
-                if (i <= state.finalIndex) continue;      // P-11: deduplicar
-                state.finalIndex = i;
+                // P-11: un final reemitido (Blink) es no-op porque la
+                // entrega es única e idempotente (mecanismo de P-04).
                 if (transcript === '') {
                   finish({ type: 'no_speech' }, 'no_speech');
                   return;
@@ -409,6 +453,9 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
           state.detachSignal = () => state.signal.removeEventListener('abort', onAbort);
         }
         startSegment();
+        } catch {
+          resolve({ type: 'recognition_failed' });  // nunca rechaza
+        }
       });
     },
 
