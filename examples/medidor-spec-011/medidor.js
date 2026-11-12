@@ -80,12 +80,19 @@ function adapterFor(language) {
   return createWebSpeechAdapter(undefined, undefined, { language });
 }
 
-async function speakOnce(language, text) {
+async function speakOnce(language, text, opts = {}) {
   const { speaker } = adapterFor(language);
   const { request: req } = request(20000);
   const start = performance.now();
   const outcome = await speaker.say(text, req);
-  return { outcome, ms: Math.round(performance.now() - start) };
+  const ms = Math.round(performance.now() - start);
+  // P-01 se mide en la primera locución RESUELTA de la carga — sea cual
+  // sea el flujo que la provoqué — y la sonda transversal no la gasta.
+  if (!opts.probe && primeraLocucion) {
+    primeraLocucion = false;
+    record('P-01', outcome, 'primera locución resuelta de la carga · ' + ms + ' ms');
+  }
+  return { outcome, ms };
 }
 
 async function listenOnce() {
@@ -117,10 +124,7 @@ async function medirLocucion() {
   const r = await speakOnce('es-MX', 'Prueba de locución del medidor.');
   record('P-02', r.outcome, r.ms + ' ms');
   if (primeraLocucion) {
-    record('P-01', r.outcome, 'primera locución de la carga · ' + r.ms + ' ms');
-    primeraLocucion = false;
-  } else {
-    log('P-01 sólo se mide en la primera locución de la carga fresca');
+    log('P-01 se registrará con la primera locución resuelta (cualquier flujo)');
   }
   // P-04 no se registra: la duplicación del terminal no atraviesa la
   // promesa (entrega única probada con dobles); declararlo aquí sería
@@ -164,11 +168,17 @@ async function medirEscucha() {
     log('reconocimiento fallido: el permiso se mide con el flujo P-14');
     return;
   }
-  record('P-07', result.type, 'tramos con re-escucha');
-  // P-11 no se registra: la reemisión no puede entregarse dos veces
-  // (entrega única probada con dobles); no es observable desde el puerto.
-  record('P-12', partials.length > 0 ? 'speech' : 'speech-no-partials',
-    partials.length + ' parciales');
+  const huboHabla = result.type === 'speech' || partials.length > 0;
+  if (huboHabla) {
+    // P-07/P-12 sólo con evidencia de habla: en silencio no hay síntoma.
+    record('P-07', result.type, 'tramos con re-escucha');
+    // P-11 no se registra: la reemisión no puede entregarse dos veces
+    // (entrega única probada con dobles); no es observable desde el puerto.
+    record('P-12', partials.length > 0 ? 'speech' : 'speech-no-partials',
+      partials.length + ' parciales');
+  } else {
+    log('silencio: P-07/P-12 exigen habla; repítelos hablando');
+  }
   if (result.type === 'no_speech') record('P-10', 'no_speech', 'presupuesto en silencio');
 }
 
@@ -243,7 +253,7 @@ async function sondaP05() {
   // Sonda aparte (?probe=p05): carga fresca y SIN tocar nada. Se registra
   // transversal (registry.probeP05), no en la celda del select: nada de
   // toques previos ni defaults de escritorio para atribuirla.
-  const r = await speakOnce('es-MX', 'Sonda sin activación previa.');
+  const r = await speakOnce('es-MX', 'Sonda sin activación previa.', { probe: true });
   registry.probeP05 = {
     measured: true,
     outcome: r.outcome,
@@ -262,6 +272,9 @@ async function exportar() {
   for (const cell of CELLS) {
     const cov = coverageOf(registry, cell.id);
     registry.cells[cell.id].coverage = cov;
+    // El JSON se explica solo: estos null son por diseño, no pendientes.
+    registry.cells[cell.id].notObservable = SCENARIOS
+      .filter((s) => s.observable === false).map((s) => s.id);
     if (!cov.complete && cov.recorded > 0) {
       log(cell.id + ': recorrido parcial ' + cov.recorded + '/' + cov.applicable
         + ' — la celda sigue «sin medir»');
