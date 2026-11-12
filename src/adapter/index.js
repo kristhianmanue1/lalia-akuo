@@ -349,6 +349,9 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
         // P-08: la escucha que desplaza a otra congela sus efectos: su
         // vigilante muerto no puede abortar la instancia vigente.
         freezeListen(activeListen);
+        // Y si la entrante nace muerta (señal ya abortada), la instancia
+        // de la escucha previa no queda huérfana sin abortar.
+        if (request.signal && request.signal.aborted) stopRecognition();
         state = {
           settled: false,
           cancelled: false,

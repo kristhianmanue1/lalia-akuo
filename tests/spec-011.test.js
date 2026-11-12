@@ -133,8 +133,8 @@ function request(budgetMs = 20000) {
 function pendiente(promise) {
   return Promise.race([
     promise.then(() => 'resolved', () => 'rejected'),
-    Promise.resolve('pending'),
-  ]);
+    Promise.resolve().then(() => 'pending'),   // un microtask de desventaja:
+  ]);                                            // si ya resolvió, se ve
 }
 
 test('C-011-01 say resuelve done/error/watchdog y sólo el terminal real es done', async () => {
@@ -454,6 +454,25 @@ test('C-011-18 tras cancel() ningún evento posterior del motor produce efecto',
   clock.advance(30000);
   assert.equal(await pendiente(escucha2), 'pending');
   assert.equal(efectos2, 0);                      // nada tras la cancelación
+  // Señal YA abortada al entrar: la petición nace muerta (R2b/R2c)
+  const muerta = request(30000);
+  muerta.controller.abort();
+  let efectosM = 0;
+  const escuchaM = listener.listen(muerta.request, {
+    onPartial: () => { efectosM += 1; },
+    onNoSpeech: () => { efectosM += 1; },
+    onError: () => { efectosM += 1; },
+  });
+  clock.advance(30000);
+  assert.equal(await pendiente(escuchaM), 'pending');
+  assert.equal(efectosM, 0);                      // ni arranca ni anuncia
+  // Callback hostil: resuelve antes de anunciar, el throw no la cuelga
+  const hostilCb = request(30000);
+  const escuchaHostil = listener.listen(hostilCb.request, {
+    onError: () => { throw new Error('callback hostil'); },
+  });
+  assert.throws(() => engine.emitRecognitionError('network'), /callback hostil/);
+  assert.deepEqual(await escuchaHostil, { type: 'recognition_failed' });
 });
 
 test('C-011-19 PATCHES declara id, engine, symptom, trigger y test por entrada', () => {
