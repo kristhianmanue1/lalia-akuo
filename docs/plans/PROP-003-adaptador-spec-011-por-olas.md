@@ -36,10 +36,19 @@ C-011-24 exigen que `budgetMs` transcurra, y SPEC-011 no declara ningún
 reloj para el adaptador. Propuesta: el segundo parámetro `runtime` con el
 **mismo par cerrado del núcleo** —`{ schedule, cancelSchedule }` de
 SPEC-001 (`C-001-19`)— y el planificador del entorno como omisión
-declarada. Exige enmienda de SPEC-011 §Entradas (declarar la entrada y la
-omisión) con procedencia de este hallazgo; los casos existentes la
-prueban. En las pruebas, reloj falso: ningún temporizador real decide nada
-(receta R4 del contrato).
+declarada. **El par se valida fail-closed como en el núcleo** (hallazgo
+LOW de R1b): media pareja, claves de más o no funciones se rechazan en la
+frontera, con su caso nuevo y su cascada de índice en el mismo commit.
+Exige enmienda de SPEC-011 §Entradas con procedencia de estas rondas; los
+casos existentes más el nuevo la prueban. En las pruebas, reloj falso:
+ningún temporizador real decide nada (receta R4 del contrato).
+
+**Exposición de P-05 (hallazgo LOW de R1b).** «Exponer que la voz exige
+activación» es costura declarada de `SPEC-009` —la vista presenta el
+aviso y recoge la activación—; lo testeable del adaptador es el `error`
+en el acto (`C-011-08`). Si la implementación quisiera una señal propia,
+esa señal exigiría su caso y su cascada; no se propone superficie nueva
+para ello.
 
 **Decisión de superficie propuesta:** nueva subentrada de exportación
 `"./adapter"` en `package.json` apuntando a `src/adapter/index.js`. La

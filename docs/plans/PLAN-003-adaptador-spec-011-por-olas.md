@@ -44,9 +44,12 @@ TAREA T-01 (Ola 1) — adaptador con dobles y superficie pública
             reescrita, y §4/§6 de estado.md reconciliados
   Steps:
   - [ ] Enmendar SPEC-011 §Entradas declarando runtime = { schedule,
-        cancelSchedule } con el entorno como omisión — verificación: la
-        enmienda cita su procedencia (R1) y los casos C-011-02, C-011-04 y
-        C-011-24 siguen siendo los que la prueban; npm test
+        cancelSchedule } con el entorno como omisión, y la validación
+        fail-closed del par — rechazo en frontera de media pareja, claves
+        de más o no funciones, como C-001-19 en el núcleo — con su caso
+        nuevo y su cascada de índice en el mismo commit — verificación:
+        la enmienda cita su procedencia (R1 y R1b) y los casos C-011-02,
+        C-011-04, C-011-24 y el nuevo la prueban; npm test
   - [ ] Escribir src/adapter/index.js con la fábrica inyectada
         (voiceEngine, runtime) y los globales sólo como omisión —
         verificación: node --check src/adapter/index.js; grep de globales
@@ -68,6 +71,10 @@ TAREA T-01 (Ola 1) — adaptador con dobles y superficie pública
         declarando que la frontera es el contrato §2, no el mapa exports)
         y §2 (fila del adaptador con procedencia SPEC-011) — verificación:
         npm run gate en verde
+  - [ ] Ronda adversarial sobre el delta de T-01 — superficie nueva,
+        enmiendas de spec y contrato, volteo de estado — verificación:
+        veredicto proceed con hallazgos cerrados o aceptados por escrito;
+        re-ronda si el cambio fue material
 
 TAREA T-02 (Ola 2) — arnés de medición en dispositivos reales
   Consumes: src/adapter/index.js (Ola 1), ADR-009 (matriz por motor,
@@ -152,7 +159,29 @@ Disposición de cada hallazgo, corregida en esta misma oleada:
   sonda aparte en carga fresca sin activación, y la meta del arnés es
   «un disparo por parche aplicable».
 - **MED-4 (evidencia de §6 anterior a los commits de Ola 0):** corregido
-  — §6 registra la corrida del gate al cierre de la Ola 0.
+  — §6 registra la corrida del gate al cierre de la Ola 0. **R1b halló
+  que la disposición se adelantaba:** el registro entra en el commit de
+  cierre de la Ola 0 (el que añade `informe-ola-0.md`), no antes; hasta
+  ese commit es un compromiso con dueño explícito —el cierre de esta
+  ola— y no una corrección ya aplicada.
+
+**R1b (12-11-2026) — re-ronda sobre el paquete corregido, revisor de
+contexto fresco en sólo lectura.** Veredicto: **fix-and-retry** (1 HIGH,
+1 MED, 2 LOW). Disposición:
+
+- **HIGH (MED-4 declarado corregido sin estarlo):** corregido en el
+  cierre — §6 se actualiza con la corrida al cierre de la Ola 0 en el
+  mismo commit que este registro final (ver arriba).
+- **MED (T-01 sin paso de ronda):** corregido — T-01 gana su paso de
+  ronda adversarial con verificación de veredicto y re-ronda.
+- **LOW (validación de runtime malformado sin declarar):** corregido —
+  la enmienda declara el rechazo fail-closed del par, con caso nuevo y
+  cascada de índice (PROP-003 §O-1 y paso 1 de T-01).
+- **LOW («exponer» la activación de P-05 sin caso ni dueño):** corregido
+  — la enmienda aclara que es costura de SPEC-009 y que lo testeable es
+  C-011-08; sin superficie nueva (PROP-003 §O-1).
+
+Re-ronda R1c sobre estos ajustes: ver registro abajo.
 - **LOW-1 (`exports` no es frontera bajo consumo por copia):** corregido
   como declaración explícita en PROP-003 §O-1 y en el paso de enmienda
   del contrato.
