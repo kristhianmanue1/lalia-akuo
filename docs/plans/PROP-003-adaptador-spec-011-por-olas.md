@@ -24,18 +24,32 @@ medible con dobles no debe esperar a ningún hardware.
 ### O-1 — Adaptador con dobles, sin dispositivo
 
 Implementar `src/adapter/` (código en inglés): una fábrica
-`createWebSpeechAdapter(voiceEngine?)` que devuelve `{ speaker, listener }`
-con las firmas de SPEC-011, más las exportaciones congeladas `PATCHES`
-(14 entradas: `id`, `engine`, `symptom`, `trigger`, `test`) y
-`ADAPTER_CAPABILITIES`. Superficie del motor inyectada; los globales del
-navegador sólo como omisión. Sus pruebas (`tests/spec-011.test.js`) cubren
+`createWebSpeechAdapter(voiceEngine?, runtime?)` que devuelve
+`{ speaker, listener }` con las firmas de SPEC-011, más las exportaciones
+congeladas `PATCHES` (14 entradas: `id`, `engine`, `symptom`, `trigger`,
+`test`) y `ADAPTER_CAPABILITIES`. Superficie del motor inyectada; los
+globales del navegador sólo como omisión. Sus pruebas (`tests/spec-011.test.js`) cubren
 los 24 casos de la spec con dobles de motor, citando cada `C-011-*`.
+
+**Reloj inyectable (hallazgo HIGH de R1).** Los casos C-011-02, C-011-04 y
+C-011-24 exigen que `budgetMs` transcurra, y SPEC-011 no declara ningún
+reloj para el adaptador. Propuesta: el segundo parámetro `runtime` con el
+**mismo par cerrado del núcleo** —`{ schedule, cancelSchedule }` de
+SPEC-001 (`C-001-19`)— y el planificador del entorno como omisión
+declarada. Exige enmienda de SPEC-011 §Entradas (declarar la entrada y la
+omisión) con procedencia de este hallazgo; los casos existentes la
+prueban. En las pruebas, reloj falso: ningún temporizador real decide nada
+(receta R4 del contrato).
 
 **Decisión de superficie propuesta:** nueva subentrada de exportación
 `"./adapter"` en `package.json` apuntando a `src/adapter/index.js`. La
 entrada `"."` no cambia: el núcleo sigue determinista y sin globales, y
 quien no usa voz no importa el adaptador. Exige enmienda del contrato de
 consumo §1 («entrada única») y §2 (fila nueva en la superficie pública).
+**La frontera real es el contrato §2, no `exports`:** bajo consumo por
+copia (ADR-010) el mapa `exports` no restringe nada — la enmienda debe
+decirlo para que nadie dependa de una barrera mecánica inexistente
+(hallazgo LOW de R1).
 
 **Alternativas descartadas:**
 - *Exportar desde `src/index.js`:* engorda la superficie del núcleo y crea
@@ -55,12 +69,15 @@ ponen en rojo la puerta si `estado.md` §2 sigue declarando SPEC-011
 Página instrumental `examples/medidor-spec-011/` (sin paso de construcción,
 servida desde la raíz del repositorio, como `tres-campos`): reproduce, una
 por una, las condiciones de disparo de los 14 parches contra el motor real,
-guía la matriz por navegador —Safari macOS, Safari iOS, Chrome escritorio,
-Chrome Android, Edge escritorio (`ADR-009`: matriz por motor, medición por
-navegador)— y exporta el registro como JSON compacto para evidencia.
-Incluye la costura de P-05: la página recoge la activación de usuario (un
-toque) antes de la primera locución, porque ese parche sólo se dispara en
-WebKit móvil sin activación previa.
+guía la matriz completa por navegador —las **seis celdas** de `ADR-009`:
+Safari macOS, Safari iOS, Chrome escritorio, Chrome Android, Edge
+escritorio, Edge móvil; compartir Blink no excusa a ningún navegador de su
+medición— y exporta el registro como JSON compacto para evidencia.
+**Sonda P-05 aparte** (hallazgo MED de R1): su disparo es `say()` **sin**
+activación previa en WebKit móvil, así que el arnés la mide en una carga
+fresca sin toque, separada del flujo que sí recoge la activación; para el
+resto de parches aplica «un disparo por parche aplicable a cada
+navegador/plataforma».
 
 **Alternativa descartada:** automatizar con Playwright como matriz
 principal. Playwright no es Safari real ni iOS real, y medir en algo que

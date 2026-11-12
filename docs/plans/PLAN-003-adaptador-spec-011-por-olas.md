@@ -30,30 +30,44 @@ Restricciones globales (verbatim del artefacto que autoriza):
 TAREAS:
 
 TAREA T-01 (Ola 1) — adaptador con dobles y superficie pública
-  Consumes: SPEC-001 (request, vocabulario), SPEC-002 (callbacks,
-            disciplina de turno), SPEC-003 (enumerado de locución y
-            presupuesto), SPEC-004 (firmas de speaker/listener),
+  Consumes: SPEC-001 (request, vocabulario, runtime C-001-19), SPEC-002
+            (callbacks, disciplina de turno), SPEC-003 (enumerado de
+            locución y presupuesto), SPEC-004 (firmas de speaker/listener),
             SPEC-011 (contrato completo: 14 parches, 24 casos),
             docs/product/contrato-de-consumo.md §1–§2
-  Produce:  src/adapter/index.js (createWebSpeechAdapter, PATCHES,
-            ADAPTER_CAPABILITIES, congelados), tests/spec-011.test.js,
-            subentrada "./adapter" en package.json, enmienda del contrato
-            §1–§2, fila SPEC-011 de estado.md §2 vuelta a implementada
+  Produce:  src/adapter/index.js (createWebSpeechAdapter(voiceEngine?,
+            runtime?), PATCHES, ADAPTER_CAPABILITIES, congelados),
+            tests/spec-011.test.js, enmienda de SPEC-011 §Entradas (reloj
+            inyectable, hallazgo HIGH-2 de R1), subentrada "./adapter" en
+            package.json, enmienda del contrato §1–§2, fila SPEC-011 de
+            estado.md §2 vuelta a implementada con su celda de motivo
+            reescrita, y §4/§6 de estado.md reconciliados
   Steps:
+  - [ ] Enmendar SPEC-011 §Entradas declarando runtime = { schedule,
+        cancelSchedule } con el entorno como omisión — verificación: la
+        enmienda cita su procedencia (R1) y los casos C-011-02, C-011-04 y
+        C-011-24 siguen siendo los que la prueban; npm test
   - [ ] Escribir src/adapter/index.js con la fábrica inyectada
-        (voiceEngine) y los globales sólo como omisión — verificación:
-        node --check src/adapter/index.js; grep de globales sólo en la
-        omisión, nunca en el arranque del módulo
+        (voiceEngine, runtime) y los globales sólo como omisión —
+        verificación: node --check src/adapter/index.js; grep de globales
+        sólo en la omisión, nunca en el arranque del módulo
   - [ ] Escribir tests/spec-011.test.js cubriendo C-011-01 a C-011-24 con
-        dobles de motor, cada caso citando su identificador —
-        verificación: node --test tests/spec-011.test.js → 24 pass;
-        mutación de muestra: comentar un parche → su prueba en rojo
-  - [ ] Voltear SPEC-011 a implementada en estado.md §2 EN EL MISMO
-        COMMIT que las pruebas — verificación: npm test (la prueba de
-        trazabilidad exige coincidencia; un commit sin el otro da BLOQ)
-  - [ ] Amendar contrato de consumo §1 (dos entradas: "." y "./adapter")
-        y §2 (fila del adaptador) — verificación: la fila declara
-        procedencia SPEC-011; npm run gate en verde
+        dobles de motor y reloj falso, cada caso citando su identificador
+        — verificación: node --test tests/spec-011.test.js → 24 pass;
+        grep setTimeout en el test → sin resultados; mutación de muestra:
+        comentar un parche → su prueba en rojo
+  - [ ] Voltear SPEC-011 a implementada en estado.md §2 con la celda de
+        motivo reescrita (la implementación con dobles no espera
+        dispositivo; lo que espera es la medición), y reconciliar §4 (el
+        bullet «SPEC-011 no se puede cerrar sin dispositivo») y §6 («el
+        adaptador real no existe») EN EL MISMO COMMIT que las pruebas —
+        verificación: npm test (la trazabilidad exige coincidencia);
+        reescrituras sin crecimiento neto de líneas (ruta 1593/1600,
+        presupuesto contado antes de escribir)
+  - [ ] Amendar contrato de consumo §1 (dos entradas: "." y "./adapter",
+        declarando que la frontera es el contrato §2, no el mapa exports)
+        y §2 (fila del adaptador con procedencia SPEC-011) — verificación:
+        npm run gate en verde
 
 TAREA T-02 (Ola 2) — arnés de medición en dispositivos reales
   Consumes: src/adapter/index.js (Ola 1), ADR-009 (matriz por motor,
@@ -66,11 +80,15 @@ TAREA T-02 (Ola 2) — arnés de medición en dispositivos reales
         que reproduce las condiciones de disparo de los 14 parches contra
         el motor real — verificación: node --check de su JS; abrir la
         página servida y reproducir al menos un disparo por parche
-  - [ ] Recorrido de matriz por navegador: Safari macOS, Safari iOS,
-        Chrome escritorio, Chrome Android, Edge escritorio —
-        verificación: registro con fecha, navegador, plataforma,
-        resultado por parche y versión derivada por ventana si aplica;
-        un navegador sin medir queda declarado «sin medir»
+        aplicable a cada navegador/plataforma
+  - [ ] Recorrido de matriz completa por navegador —las seis celdas de
+        ADR-009: Safari macOS, Safari iOS, Chrome escritorio, Chrome
+        Android, Edge escritorio, Edge móvil— más la sonda P-05 aparte:
+        carga fresca sin activación en WebKit móvil, separada del flujo
+        que sí recoge la activación — verificación: registro con fecha,
+        navegador, plataforma, resultado por parche y versión derivada
+        por ventana si aplica; una celda sin medir queda declarada «sin
+        medir», incluida Edge móvil
   - [ ] Ronda adversarial sobre el delta del arnés — verificación:
         veredicto proceed con hallazgos cerrados o aceptados por escrito
 
@@ -89,8 +107,12 @@ TAREA T-03 (Ola 3) — cierre por evidencia
         la medición los contradice — verificación: enmienda de SPEC-003/
         SPEC-004 con su caso y su prueba en el mismo commit; npm test
   - [ ] Recortar parches sólo con evidencia de motor fuera de objetivo —
-        verificación: cada recorte cita su medición; PATCHES sigue
-        cerrado y C-011-19 sigue en verde
+        el recorte arrastra su cascada en el mismo commit: caso fuera de
+        SPEC-011, prueba fuera de tests/, fila y total de
+        docs/specs/00-INDICE.md ajustados — verificación: cada recorte
+        cita su medición; PATCHES sigue cerrado y C-011-19 sigue en
+        verde; npm run gate en verde (la trazabilidad y el total del
+        índice caen en rojo si la cascada queda a medias)
   - [ ] Ronda adversarial final sobre el delta — verificación: veredicto
         proceed; npm run gate en verde
 
@@ -107,6 +129,32 @@ Partición: no excede límite; no parte.
 
 ## Rondas
 
-**R1 (12-11-2026) — sobre PROP-003 + PLAN-003.** Revisor de contexto fresco
-en sólo lectura contra el repositorio real. Estado: pendiente de ejecución;
-se registra aquí su veredicto y la disposición de cada hallazgo.
+**R1 (12-11-2026) — sobre PROP-003 + PLAN-003, revisor de contexto fresco
+en sólo lectura.** Veredicto: **fix-and-retry** (2 HIGH, 4 MED, 1 LOW).
+Disposición de cada hallazgo, corregida en esta misma oleada:
+
+- **HIGH-1 (matriz de 5 celdas, Edge móvil omitido):** corregido — la
+  matriz es ahora las **seis celdas** de `ADR-009` en PROP-003 §O-2 y
+  T-02, con Edge móvil declarado y «sin medir» como estado explícito si
+  no se mide.
+- **HIGH-2 (sin reloj inyectable para C-011-02/04/24):** corregido — la
+  firma pasa a `createWebSpeechAdapter(voiceEngine?, runtime?)` con el par
+  cerrado `{ schedule, cancelSchedule }` del núcleo (`C-001-19`) y el
+  entorno como omisión; T-01 gana el paso de enmienda de SPEC-011
+  §Entradas con esta procedencia; las pruebas usan reloj falso.
+- **MED-1 (recorte sin su cascada de trazabilidad):** corregido — el paso
+  de recorte de T-03 arrastra caso, prueba, fila y total del índice en el
+  mismo commit.
+- **MED-2 (estado §2/§4/§6 sin reconciliar en T-01):** corregido — el
+  Produce de T-01 incluye la celda de motivo de §2 y la reconciliación de
+  §4 y §6, con reescritura sin crecimiento neto (ruta 1593/1600).
+- **MED-3 (sonda P-05 imposible en el flujo activado):** corregido —
+  sonda aparte en carga fresca sin activación, y la meta del arnés es
+  «un disparo por parche aplicable».
+- **MED-4 (evidencia de §6 anterior a los commits de Ola 0):** corregido
+  — §6 registra la corrida del gate al cierre de la Ola 0.
+- **LOW-1 (`exports` no es frontera bajo consumo por copia):** corregido
+  como declaración explícita en PROP-003 §O-1 y en el paso de enmienda
+  del contrato.
+
+Re-ronda R1b sobre el paquete corregido: ver registro abajo.
