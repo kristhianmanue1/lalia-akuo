@@ -69,8 +69,8 @@ TAREA T-01 (Ola 1) — adaptador con dobles y superficie pública
         bullet «SPEC-011 no se puede cerrar sin dispositivo») y §6 («el
         adaptador real no existe») EN EL MISMO COMMIT que las pruebas —
         verificación: npm test (la trazabilidad exige coincidencia);
-        reescrituras sin crecimiento neto de líneas (ruta 1593/1600,
-        presupuesto contado antes de escribir)
+        reescrituras sin crecimiento neto de líneas (presupuesto de
+        lectura 1600: contar antes de escribir)
   - [ ] Amendar contrato de consumo §1 (dos entradas: "." y "./adapter",
         declarando que la frontera es el contrato §2, no el mapa exports)
         y §2 (fila del adaptador con procedencia SPEC-011) — verificación:
@@ -159,7 +159,7 @@ Disposición de cada hallazgo:
   mismo commit.
 - **MED-2 (estado §2/§4/§6 sin reconciliar en T-01):** corregido — el
   Produce de T-01 incluye la celda de motivo de §2 y la reconciliación de
-  §4 y §6, con reescritura sin crecimiento neto (ruta 1593/1600).
+  §4 y §6, con reescritura sin crecimiento neto (ruta entonces 1593/1600).
 - **MED-3 (sonda P-05 imposible en el flujo activado):** corregido —
   sonda aparte en carga fresca sin activación, y la meta del arnés es
   «un disparo por parche aplicable».
@@ -212,3 +212,26 @@ contexto fresco en sólo lectura.** Veredicto: **fix-and-retry** (1 HIGH,
   `docs/plans/informe-ola-0.md`».
 
 Re-ronda R1d sobre estos ajustes: se registra abajo al ejecutarse.
+
+**R1d (12-11-2026) — re-ronda sobre el delta de cd89aa5, revisor de
+contexto fresco en sólo lectura.** Veredicto: **proceed** (3 LOW, sin
+BLOCKER/HIGH/MED). Los tres LOW quedaron cerrados en el commit de cierre
+de la Ola 0 —el que añade `informe-ola-0.md`—, como el propio revisor
+asignó:
+
+- **LOW (cifra de ruta citada como 1593 siendo 1594):** corregido —
+  PROP-003 §2 actualizada a 1594/1600; las menciones operativas de
+  T-01 relativizadas a «presupuesto 1600: contar antes de escribir», y
+  el registro histórico de R1 MED-2 precisa «ruta entonces 1593/1600».
+  Nota: la disposición del HIGH de R1c decía «todas las menciones pasan
+  a “todos los casos declarados”»; tres de cuatro usan esa fórmula y la
+  cuarta (Consumes de T-01) reconcilia por cuenta explícita — la
+  sustancia del fix era la reconciliación, y las cuatro están
+  reconciliadas.
+- **LOW (presente deóntico del cierre sin marcar el pendiente):**
+  corregido — este commit es el cierre: `informe-ola-0.md` existe a
+  partir de él y la corrida del gate queda registrada en `estado.md` §6.
+- **LOW ya descrito arriba (frase auto-referencial):** sin cambios
+  adicionales; R1d verificó su corrección.
+
+Con esto el paquete PROP-003 + PLAN-003 queda ejecutable para la Ola 1.

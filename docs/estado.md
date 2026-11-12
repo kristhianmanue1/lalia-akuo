@@ -197,10 +197,10 @@ sin respaldo es justo lo que este método prohíbe.
 
 **Verificado, con su comando:**
 
-- La puerta completa en verde el 12-11-2026 sobre `12277f6` (`npm run
-  gate`, Python 3.12 del venv): `check_sizes` OK con 95 archivos —los dos
-  nuevos son config de agentes (`opencode*.json`)— y ruta 1577/1600, las
-  66 del método y las 159 de la biblioteca.
+- La puerta completa en verde el 12-11-2026 al cierre de la Ola 0 de
+  PLAN-003 (`npm run gate`, Python 3.12 del venv): `check_sizes` OK con
+  98 archivos y ruta de lectura 1594/1600, las 66 del método y las 159
+  de la biblioteca; registro por commit en `../plans/informe-ola-0.md`.
 
 - La puerta completa en verde (`sh scripts/run-gate.sh`, con Python 3.12 del
   venv): `check_sizes` OK con 93 archivos y ruta de lectura 1577/1600, las 66

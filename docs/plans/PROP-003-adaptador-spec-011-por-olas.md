@@ -119,7 +119,7 @@ puede cerrarse con la matriz de O-2. La costura P-05 de O-2 es del arnés
 - **Dispositivos:** sin Safari real (macOS/iOS) no hay matriz ni ventana
   medida; O-2 queda esperando hardware. No se declara compatibilidad sin
   matriz (`ADR-009`, `estado.md` §6).
-- **Presupuesto de lectura:** la ruta va en 1593/1600; las adiciones de
+- **Presupuesto de lectura:** la ruta va a 1594/1600; las adiciones de
   esta ola (estado §5/§6, contrato, compatibilidad) caben, pero cada ola
   posterior debe volver a contarlo antes de escribir.
 - **Fuga de dominio:** tequio nombra inscripción de participantes; nada de
