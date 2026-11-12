@@ -466,6 +466,7 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
         startSegment();
         } catch {
           freezeListen(state);   // sin efectos diferidos tras el fallo
+          stopRecognition();     // ni instancia huérfana del motor
           resolve({ type: 'recognition_failed' });  // nunca rechaza
         }
       });

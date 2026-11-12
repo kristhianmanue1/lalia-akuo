@@ -240,12 +240,11 @@ test('C-011-06 el terminal de una locución cancelada no cierra la siguiente (P-
   const { speaker } = armar(engine, clock);
   const primera = speaker.say('una', request().request);
   speaker.cancel();                               // cancela la primera
-  const primeraEnVuelo = pendiente(primera);
   const segunda = speaker.say('dos', request().request);
   const cancelada = engine.synthesis.speakCalls[0].utterance;
   cancelada.onend();                              // terminal tardío de la cancelada
-  assert.equal(await primeraEnVuelo, 'pending');  // no la cerró a ella…
-  assert.equal(await pendiente(segunda), 'pending'); // …ni a la vigente
+  assert.equal(await pendiente(primera), 'pending');   // no la cerró a ella…
+  assert.equal(await pendiente(segunda), 'pending');   // …ni a la vigente
   engine.synthesis.emitEnd();
   assert.equal(await segunda, 'done');            // la vigente cierra sola
   // Y una locución desplazada sin cancel tampoco habla con voces tardías:
@@ -466,6 +465,16 @@ test('C-011-18 tras cancel() ningún evento posterior del motor produce efecto',
   clock.advance(30000);
   assert.equal(await pendiente(escuchaM), 'pending');
   assert.equal(efectosM, 0);                      // ni arranca ni anuncia
+  // Y una escucha muerta que desplaza a una viva aborta su instancia
+  const engineD = makeEngine();
+  const { listener: listenerD } = armar(engineD, clock);
+  const viva = listenerD.listen(request(30000).request, {});
+  const muertaD = request(30000);
+  muertaD.controller.abort();
+  listenerD.listen(muertaD.request, {});
+  assert.equal(engineD.instances.length, 1);      // la muerta no creó ninguna
+  assert.equal(engineD.instances[0].aborted, true);  // la viva quedó abortada
+  assert.equal(await pendiente(viva), 'pending'); // y sin resolver
   // Callback hostil: resuelve antes de anunciar, el throw no la cuelga
   const hostilCb = request(30000);
   const escuchaHostil = listener.listen(hostilCb.request, {
