@@ -2,7 +2,7 @@
 
 **Propósito:** que una sesión nueva sepa qué está hecho, qué no, y cuál es el
 siguiente paso concreto, **sin leer la conversación de nadie**.
-**Última actualización:** 17 de octubre de 2026.
+**Última actualización:** 12 de noviembre de 2026.
 
 Este archivo no es una promesa: lo comprueba la puerta. La prueba de
 trazabilidad (`../tests/traceability.test.js`) lee la tabla del §2 y exige que
@@ -178,12 +178,28 @@ la guía es el criterio de E6-03, del lado del consumidor, no verificable
 desde este repositorio. Registro en
 `../plans/PLAN-002-guia-ejemplo-y-deuda-documental.md`.
 
+**Reactivación (12-11-2026).** El Operador reactiva el proyecto con un
+segundo consumidor nombrado: **tequio** (clon hermano, `~/www/tequio`),
+asistente de reuniones que consumirá la biblioteca desde su UI React para
+formularios hablados, incluida la inscripción hablada de participantes.
+La frontera de §7 no se mueve: tequio aporta sus campos, sus intérpretes
+y su almacenamiento; nada de su dominio entra aquí, y su spec v1.0 aún no
+declara este consumo (deuda suya, no nuestra). El paso activo pasa a ser
+el 3 —`SPEC-011`, por olas con rondas adversariales—: propuesta en
+`../plans/PROP-003-adaptador-spec-011-por-olas.md` y plan en
+`../plans/PLAN-003-adaptador-spec-011-por-olas.md`.
+
 ## 6. Qué está verificado y qué no
 
 Se dice con la misma precisión que la evidencia permite, porque un «verificado»
 sin respaldo es justo lo que este método prohíbe.
 
 **Verificado, con su comando:**
+
+- La puerta completa en verde el 12-11-2026 sobre `12277f6` (`npm run
+  gate`, Python 3.12 del venv): `check_sizes` OK con 95 archivos —los dos
+  nuevos son config de agentes (`opencode*.json`)— y ruta 1577/1600, las
+  66 del método y las 159 de la biblioteca.
 
 - La puerta completa en verde (`sh scripts/run-gate.sh`, con Python 3.12 del
   venv): `check_sizes` OK con 93 archivos y ruta de lectura 1577/1600, las 66
