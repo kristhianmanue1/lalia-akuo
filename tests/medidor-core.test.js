@@ -92,9 +92,22 @@ test('scenariosForCell filtra por motor: webkit no mide parches de blink', () =>
   assert.ok(!safari.some((s) => s.engine === 'blink'));
   assert.ok(safari.some((s) => s.engine === 'webkit'));
   assert.ok(safari.some((s) => s.engine === 'both'));
+  assert.ok(!safari.some((s) => s.flow === 'probe'), 'la sonda no es de celda');
   const chrome = scenariosForCell('chrome-android');
   assert.ok(!chrome.some((s) => s.engine === 'webkit'));
   assert.deepEqual(scenariosForCell('celda-inexistente'), []);
+});
+
+test('la cobertura no exige lo no observable: P-04/P-11 no bloquean celda', () => {
+  const registry = emptyRegistry();
+  const cell = registry.cells['chrome-desktop'];
+  for (const scenario of scenariosForCell('chrome-desktop')) {
+    if (scenario.observable === false) continue;      // P-04/P-11: fuera
+    cell.patches[scenario.id] = { outcome: 'x', ok: 'y', detail: '', at: '' };
+  }
+  const cov = coverageOf(registry, 'chrome-desktop');
+  assert.equal(cov.complete, true);                   // sin exigir no-observables
+  assert.ok(cov.applicable < scenariosForCell('chrome-desktop').length);
 });
 
 test('la cobertura se deriva del recorrido: un hueco deja la celda sin medir', () => {

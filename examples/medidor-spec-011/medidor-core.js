@@ -41,9 +41,9 @@ export const SCENARIOS = Object.freeze([
     accept: ['done'],                 // 'done-late' = la cancelada cerró tarde
   }),
   Object.freeze({
-    id: 'P-04', engine: 'both', flow: 'speaker',
+    id: 'P-04', engine: 'both', flow: 'speaker', observable: false,
     name: 'cierre duplicado',
-    how: 'locución normal: si el motor reemite el terminal, la entrega es una',
+    how: 'NO OBSERVABLE desde el puerto: la duplicación no atraviesa la promesa; la entrega única la garantiza el cierre idempotente, probado con dobles',
     accept: ['done'],
   }),
   Object.freeze({
@@ -83,9 +83,9 @@ export const SCENARIOS = Object.freeze([
     accept: ['no_speech'],
   }),
   Object.freeze({
-    id: 'P-11', engine: 'blink', flow: 'listener',
+    id: 'P-11', engine: 'blink', flow: 'listener', observable: false,
     name: 'resultado final reemitido',
-    how: 'escucha normal: si Blink reemite el final, la entrega es una',
+    how: 'NO OBSERVABLE desde el puerto: la reemisión no puede entregarse dos veces; la entrega única la garantiza el cierre, probado con dobles',
     accept: ['speech'],
   }),
   Object.freeze({
@@ -138,19 +138,24 @@ export function accepts(scenarioId, outcome) {
 }
 
 // Escenarios aplicables a una celda por motor: «both» aplica a todos.
+// La sonda transversal (flow 'probe') no es de celda: se registra aparte.
 export function scenariosForCell(cellId) {
   const cell = CELLS.find((c) => c.id === cellId);
   if (!cell) return [];
-  return SCENARIOS.filter((s) => s.engine === 'both' || s.engine === cell.engine);
+  return SCENARIOS.filter((s) => s.flow !== 'probe'
+    && (s.engine === 'both' || s.engine === cell.engine));
 }
 
 // «Medida» es una consecuencia del recorrido, no un botón: una celda
-// cuenta como medida sólo cuando todos sus parches aplicables tienen
-// desenlace observado. Cualquier hueco la deja sin medir.
+// cuenta como medida sólo cuando todos sus parches aplicables Y
+// observables tienen desenlace. Los no observables (P-04/P-11) no se
+// exigen: este arnés no puede verlos desde el puerto, y fingirlo sería
+// evidencia fabricada. Cualquier hueco observable deja la celda sin medir.
 export function coverageOf(registry, cellId) {
   const cell = registry.cells[cellId];
   if (!cell) return { applicable: 0, recorded: 0, complete: false };
-  const applicable = scenariosForCell(cellId);
+  const applicable = scenariosForCell(cellId)
+    .filter((s) => s.observable !== false);
   const recorded = applicable.filter((s) => cell.patches[s.id] !== null);
   return {
     applicable: applicable.length,

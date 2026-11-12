@@ -15,7 +15,14 @@ import {
 const registry = emptyRegistry();
 const params = new URLSearchParams(location.search);
 const PROBE = params.get('probe');
-let CELL = params.get('cell') || localStorage.getItem('medidor-cell') || 'safari-macos';
+const URL_CELL = params.get('cell');
+const CELDA_VALIDA = (id) => CELLS.some((c) => c.id === id);
+function celdaGuardada() {
+  const guardada = localStorage.getItem('medidor-cell');
+  return guardada && CELDA_VALIDA(guardada) ? guardada : null;
+}
+let CELL = (URL_CELL && CELDA_VALIDA(URL_CELL) ? URL_CELL : null)
+  || celdaGuardada() || 'safari-macos';
 let primeraLocucion = true;
 
 const $ = (id) => document.getElementById(id);
@@ -27,6 +34,10 @@ function log(line) {
 function record(patchId, outcome, detail) {
   const cell = registry.cells[CELL];
   if (!cell) return;
+  if (!scenariosForCell(CELL).some((s) => s.id === patchId)) {
+    log(patchId + ' no aplica a ' + CELL + ': no se registra');
+    return;
+  }
   cell.patches[patchId] = {
     outcome,
     ok: accepts(patchId, outcome) ? 'pass' : 'fail',
@@ -105,13 +116,15 @@ async function medirLocucion() {
   }
   const r = await speakOnce('es-MX', 'Prueba de locución del medidor.');
   record('P-02', r.outcome, r.ms + ' ms');
-  record('P-04', r.outcome, 'entrega única');
   if (primeraLocucion) {
     record('P-01', r.outcome, 'primera locución de la carga · ' + r.ms + ' ms');
     primeraLocucion = false;
   } else {
     log('P-01 sólo se mide en la primera locución de la carga fresca');
   }
+  // P-04 no se registra: la duplicación del terminal no atraviesa la
+  // promesa (entrega única probada con dobles); declararlo aquí sería
+  // evidencia fabricada.
 }
 
 async function medirP06() {
@@ -126,8 +139,18 @@ async function medirP06() {
 }
 
 async function medirIdiomaSinVoz() {
+  if (!$('activada').checked) {
+    log('activa la voz primero (costura de activación de SPEC-009)');
+    return;
+  }
+  const voces = globalThis.speechSynthesis
+    ? globalThis.speechSynthesis.getVoices() : [];
+  const francesas = voces.filter((v) => /^fr/i.test(v.lang || '')).length;
+  if (francesas > 0) {
+    log('ojo: hay ' + francesas + ' voces «fr»: el disparo no se reproduce');
+  }
   const r = await speakOnce('fr', 'Essai de langue sans voix installée.');
-  record('P-13', r.outcome, 'idioma «fr» · ' + r.ms + ' ms');
+  record('P-13', r.outcome, francesas + ' voces fr · ' + r.ms + ' ms');
 }
 
 async function medirEscucha() {
@@ -142,7 +165,8 @@ async function medirEscucha() {
     return;
   }
   record('P-07', result.type, 'tramos con re-escucha');
-  record('P-11', result.type, 'entrega única');
+  // P-11 no se registra: la reemisión no puede entregarse dos veces
+  // (entrega única probada con dobles); no es observable desde el puerto.
   record('P-12', partials.length > 0 ? 'speech' : 'speech-no-partials',
     partials.length + ' parciales');
   if (result.type === 'no_speech') record('P-10', 'no_speech', 'presupuesto en silencio');
@@ -153,12 +177,19 @@ async function medirDobleEscucha() {
     log('activa la voz primero (costura de activación de SPEC-009)');
     return;
   }
-  log('P-08: primera escucha en vuelo; la segunda debe arrancar sin lanzar.');
-  log('habla cuando veas «segunda escucha activa»…');
+  // P-08 se mide sobre el MISMO listener: el desplazamiento y el congelado
+  // de la primera escucha SON el comportamiento parcheado.
   const { listener } = adapterFor('es-MX');
+  log('P-08: primera escucha en vuelo sobre el mismo listener…');
   listener.listen(request(30000).request, { onPartial: () => {} });
-  const { result } = await listenOnce();
+  log('segunda escucha activa: habla ahora…');
+  const { result } = await listenOnceOn(listener);
   record('P-08', result.type, 'segunda escucha sin recargar');
+}
+
+function listenOnceOn(listener) {
+  const { request: req } = request(30000);
+  return listener.listen(req, { onPartial: () => {} }).then((result) => ({ result }));
 }
 
 async function medirPermisoDenegado() {
@@ -172,6 +203,8 @@ async function medirCancelacion() {
     log('activa la voz primero (costura de activación de SPEC-009)');
     return;
   }
+  log('P-03: locución cancelada a los 150 ms (mídela tras una locución');
+  log('previa, para asegurar que la cancelada llegó a hablar).');
   const { speaker } = adapterFor('es-MX');
   const { request: req, controller } = request(20000);
   const cancelada = speaker.say('Locución que se va a cancelar a mitad.', req);
@@ -187,20 +220,23 @@ async function medirCancelacion() {
   // P-09: cancelación de la ESCUCHA (aborto propio, sin error del turno)
   const { listener } = adapterFor('es-MX');
   const { request: reqEscucha, controller: cEscucha } = request(30000);
-  let efectos = 0;
+  let efectosTrasCancel = 0;
+  let contando = false;                  // sólo cuenta desde la cancelación
   const escucha = listener.listen(reqEscucha, {
-    onPartial: () => { efectos += 1; },
-    onNoSpeech: () => { efectos += 1; },
-    onError: () => { efectos += 1; },
+    onPartial: () => { if (contando) efectosTrasCancel += 1; },
+    onNoSpeech: () => { if (contando) efectosTrasCancel += 1; },
+    onError: () => { if (contando) efectosTrasCancel += 1; },
   });
+  log('P-09: escucha iniciada — guarda silencio, se cancela en 800 ms');
   setTimeout(() => {
+    contando = true;
     listener.cancel();
     cEscucha.abort();
   }, 800);
   const escuchaPendiente = await quedoPendiente(escucha, 2500);
-  record('P-09', escuchaPendiente && efectos === 0 ? 'cancelled-clean' : 'resolved',
+  record('P-09', escuchaPendiente && efectosTrasCancel === 0 ? 'cancelled-clean' : 'resolved',
     'promesa ' + (escuchaPendiente ? 'sin resolver' : 'resuelta')
-    + ' · ' + efectos + ' callbacks tras la cancelación');
+    + ' · ' + efectosTrasCancel + ' callbacks tras la cancelación');
 }
 
 async function sondaP05() {
@@ -264,6 +300,9 @@ function init() {
   $('idioma-sin-voz').addEventListener('click', medirIdiomaSinVoz);
   $('exportar').addEventListener('click', exportar);
   describeEngine();
+  if (URL_CELL && !CELDA_VALIDA(URL_CELL)) {
+    log('?cell=' + URL_CELL + ' desconocida: midiendo en ' + CELL);
+  }
   if (PROBE === 'p05') {
     document.body.setAttribute('data-probe', 'p05');
     sondaP05();          // automática y sin toque: eso es la condición
