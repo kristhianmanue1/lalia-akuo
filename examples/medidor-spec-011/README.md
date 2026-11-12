@@ -24,18 +24,21 @@ En iOS/Android, sirve desde la raíz en tu computadora y abre la URL
 1. Elige la celda (Safari·macOS, Safari·iOS, Chrome·escritorio,
    Chrome·Android, Edge·escritorio, Edge·móvil) — puedes fijarla en la
    URL con `?cell=<id>` — y recarga.
-2. Marca «voz activada por gesto» y recorre un flujo por botón:
-   **Locución** (P-01 se registra con la primera locución resuelta de la
-   carga, venga del flujo que venga, y P-02 siempre), **P-06**
-   (observacional: la condición no se fuerza), **Escucha** (P-07/10/12:
-   habla, calla unos segundos y vuelve a hablar — en silencio no hay
-   síntoma y no se registran), **Doble escucha** (P-08, sin recargar),
+2. Marca «voz activada por gesto» y recorre un flujo por botón — mide
+   **Locución primero**: P-01 se registra con la primera locución
+   resuelta de la carga (de cualquier flujo salvo P-13, que no la gasta:
+   un idioma sin voz no ejercita la espera de voces). Luego: **P-06**
+   (observacional: la condición no se fuerza), **Escucha** (P-07/P-12:
+   habla, calla unos segundos y vuelve a hablar — sin habla no hay
+   síntoma y no se registran; **P-10 se mide con una segunda pasada del
+   mismo botón en silencio total**, dejando agotar los 30 s: ahí el
+   silencio sí es la condición), **Doble escucha** (P-08, sin recargar),
    **Permiso denegado** (P-14: deniega el micrófono cuando aparezca la
    petición) y **Cancelación** (P-03/09: la página cancela por ti y
    observa qué queda sin resolver). Para **P-13**, pulsa «Idioma sin voz».
    **P-04 y P-11 no se registran por diseño**: la duplicación que cazan no
    atraviesa la promesa (la entrega única queda probada con dobles); el
-   JSON los lleva como `notObservable`.
+   JSON los lleva como `notObservable` (sólo los aplicables por motor).
 3. Cada parche se registra con el desenlace **observado**; un desenlace
    fuera de los aceptados marca `fail`, y una celda sólo cuenta como
    medida cuando se recorrió todo lo aplicable (la cobertura se deriva

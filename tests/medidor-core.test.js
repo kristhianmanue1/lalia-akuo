@@ -8,9 +8,10 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   CELLS, SCENARIOS, emptyRegistry, toCompactJson, accepts,
-  scenariosForCell, coverageOf,
+  scenariosForCell, coverageOf, notObservableFor,
 } from '../examples/medidor-spec-011/medidor-core.js';
 import { PATCHES } from '../src/adapter/index.js';
 
@@ -108,6 +109,29 @@ test('la cobertura no exige lo no observable: P-04/P-11 no bloquean celda', () =
   const cov = coverageOf(registry, 'chrome-desktop');
   assert.equal(cov.complete, true);                   // sin exigir no-observables
   assert.ok(cov.applicable < scenariosForCell('chrome-desktop').length);
+});
+
+test('notObservableFor sólo declara los no observables que aplican por motor', () => {
+  // En webkit, el null de P-11 (blink) es «no aplica por motor»,
+  // no «no observable»: el JSON no debe confundirlos.
+  assert.deepEqual(notObservableFor('safari-ios'), ['P-04']);
+  assert.deepEqual(notObservableFor('safari-macos'), ['P-04']);
+  assert.deepEqual(notObservableFor('chrome-android'), ['P-04', 'P-11']);
+  assert.deepEqual(notObservableFor('edge-mobile'), ['P-04', 'P-11']);
+  for (const id of notObservableFor('safari-ios')) {
+    const escenario = SCENARIOS.find((s) => s.id === id);
+    assert.equal(escenario.observable, false);
+  }
+});
+
+test('el protocolo declara la pasada de P-10 y la excepción de P-13', () => {
+  const readme = readFileSync(
+    new URL('../examples/medidor-spec-011/README.md', import.meta.url), 'utf8');
+  assert.match(readme, /P-10 se mide con una segunda pasada/,
+    'P-10 exige su pasada en silencio total, declarada');
+  assert.match(readme, /sin voz no ejercita la espera de voces/,
+    'la exclusión de P-13 del gasto de P-01, declarada');
+  assert.match(readme, /Locución primero/, 'orden recomendado para P-01');
 });
 
 test('la cobertura se deriva del recorrido: un hueco deja la celda sin medir', () => {

@@ -146,6 +146,15 @@ export function scenariosForCell(cellId) {
     && (s.engine === 'both' || s.engine === cell.engine));
 }
 
+// Los no observables que APLICAN a una celda: en una celda webkit, el
+// null de P-11 (blink) es «no aplica por motor», no «no observable», y
+// el JSON no debe confundirlos (R3d).
+export function notObservableFor(cellId) {
+  return scenariosForCell(cellId)
+    .filter((s) => s.observable === false)
+    .map((s) => s.id);
+}
+
 // «Medida» es una consecuencia del recorrido, no un botón: una celda
 // cuenta como medida sólo cuando todos sus parches aplicables Y
 // observables tienen desenlace. Los no observables (P-04/P-11) no se

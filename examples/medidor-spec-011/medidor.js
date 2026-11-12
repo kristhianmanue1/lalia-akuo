@@ -8,7 +8,7 @@
 
 import { createWebSpeechAdapter } from '../../src/adapter/index.js';
 import {
-  CELLS, SCENARIOS, emptyRegistry, toCompactJson, accepts,
+  CELLS, emptyRegistry, toCompactJson, accepts, notObservableFor,
   scenariosForCell, coverageOf,
 } from './medidor-core.js';
 
@@ -86,11 +86,14 @@ async function speakOnce(language, text, opts = {}) {
   const start = performance.now();
   const outcome = await speaker.say(text, req);
   const ms = Math.round(performance.now() - start);
-  // P-01 se mide en la primera locución RESUELTA de la carga — sea cual
-  // sea el flujo que la provoqué — y la sonda transversal no la gasta.
-  if (!opts.probe && primeraLocucion) {
+  // P-01 se gasta con la primera locución RESUELTA de la carga, venga del
+  // flujo que venga —salvo el flujo P-13: un idioma sin voz resuelve
+  // error sin pasar por la espera de voces, y registrarlo como P-01
+  // sería un pass sin condición (R3d). La sonda transversal tampoco.
+  if (!opts.probe && opts.flow !== 'P-13' && primeraLocucion) {
     primeraLocucion = false;
-    record('P-01', outcome, 'primera locución resuelta de la carga · ' + ms + ' ms');
+    record('P-01', outcome,
+      'flujo ' + opts.flow + ' · primera locución resuelta de la carga · ' + ms + ' ms');
   }
   return { outcome, ms };
 }
@@ -121,11 +124,11 @@ async function medirLocucion() {
     log('activa la voz primero (costura de activación de SPEC-009)');
     return;
   }
-  const r = await speakOnce('es-MX', 'Prueba de locución del medidor.');
-  record('P-02', r.outcome, r.ms + ' ms');
   if (primeraLocucion) {
-    log('P-01 se registrará con la primera locución resuelta (cualquier flujo)');
+    log('P-01 se registrará con esta primera locución resuelta de la carga');
   }
+  const r = await speakOnce('es-MX', 'Prueba de locución del medidor.', { flow: 'P-02' });
+  record('P-02', r.outcome, r.ms + ' ms');
   // P-04 no se registra: la duplicación del terminal no atraviesa la
   // promesa (entrega única probada con dobles); declararlo aquí sería
   // evidencia fabricada.
@@ -138,7 +141,7 @@ async function medirP06() {
   }
   log('P-06 es observacional: la condición (cola en pausa) no se fuerza;');
   log('deja voz en pausa en otras pestañas y mide la primera locución aquí.');
-  const r = await speakOnce('es-MX', 'Locución tras posible pausa de la cola.');
+  const r = await speakOnce('es-MX', 'Locución tras posible pausa de la cola.', { flow: 'P-06' });
   record('P-06', r.outcome, 'observacional · ' + r.ms + ' ms');
 }
 
@@ -153,7 +156,9 @@ async function medirIdiomaSinVoz() {
   if (francesas > 0) {
     log('ojo: hay ' + francesas + ' voces «fr»: el disparo no se reproduce');
   }
-  const r = await speakOnce('fr', 'Essai de langue sans voix installée.');
+  log('P-13 no gasta P-01: un idioma sin voz no ejercita la espera de');
+  log('voces que ese parche mide.');
+  const r = await speakOnce('fr', 'Essai de langue sans voix installée.', { flow: 'P-13' });
   record('P-13', r.outcome, francesas + ' voces fr · ' + r.ms + ' ms');
 }
 
@@ -224,7 +229,7 @@ async function medirCancelacion() {
   }, 150);
   const pendiente = await quedoPendiente(cancelada, 2000);
   log('la cancelada quedó ' + (pendiente ? 'sin resolver (correcto)' : 'RESUELTA (síntoma)'));
-  const r = await speakOnce('es-MX', 'Locución después de la cancelación.');
+  const r = await speakOnce('es-MX', 'Locución después de la cancelación.', { flow: 'P-03' });
   record('P-03', pendiente ? r.outcome : 'done-late',
     (pendiente ? 'cancelada congelada' : 'cancelada cerró tarde') + ' · nueva ' + r.outcome);
   // P-09: cancelación de la ESCUCHA (aborto propio, sin error del turno)
@@ -272,9 +277,9 @@ async function exportar() {
   for (const cell of CELLS) {
     const cov = coverageOf(registry, cell.id);
     registry.cells[cell.id].coverage = cov;
-    // El JSON se explica solo: estos null son por diseño, no pendientes.
-    registry.cells[cell.id].notObservable = SCENARIOS
-      .filter((s) => s.observable === false).map((s) => s.id);
+    // El JSON se explica solo: estos null son por diseño, no pendientes
+    // —y sólo los que aplican a esta celda por motor.
+    registry.cells[cell.id].notObservable = notObservableFor(cell.id);
     if (!cov.complete && cov.recorded > 0) {
       log(cell.id + ': recorrido parcial ' + cov.recorded + '/' + cov.applicable
         + ' — la celda sigue «sin medir»');
