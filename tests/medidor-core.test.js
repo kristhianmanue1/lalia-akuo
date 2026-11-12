@@ -115,13 +115,15 @@ test('la cobertura se deriva del recorrido: un hueco deja la celda sin medir', (
   const vacia = coverageOf(registry, 'safari-ios');
   assert.equal(vacia.complete, false);
   assert.equal(vacia.recorded, 0);
-  assert.equal(vacia.applicable, scenariosForCell('safari-ios').length);
+  const observables = scenariosForCell('safari-ios')
+    .filter((s) => s.observable !== false);
+  assert.equal(vacia.applicable, observables.length);
   const cell = registry.cells['safari-ios'];
   for (const scenario of scenariosForCell('safari-ios')) {
     cell.patches[scenario.id] = { outcome: 'x', ok: 'y', detail: '', at: '' };
   }
   assert.equal(coverageOf(registry, 'safari-ios').complete, true);
-  cell.patches['P-13'] = null;                    // un solo hueco basta
+  cell.patches['P-13'] = null;                    // un solo hueco observable basta
   const conHueco = coverageOf(registry, 'safari-ios');
   assert.equal(conHueco.complete, false);
   assert.equal(conHueco.recorded, conHueco.applicable - 1);
