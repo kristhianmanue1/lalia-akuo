@@ -78,7 +78,31 @@ de contrato reproducidas por sondas ejecutables del revisor. Disposición:
   interino repetido y afirma que no se re-entrega.
 - **LOW-5 (import sin uso):** corregido — `SPEECH_BUDGET_MS` fuera.
 
-Re-ronda R2b sobre el delta corregido: registro abajo al ejecutarse.
+Re-ronda R2b: ejecutada, registro a continuación.
+
+**R2b (12-11-2026) — re-ronda sobre el delta c916101, revisor de contexto
+fresco en sólo lectura.** Veredicto: **fix-and-retry** (1 MED, 3 LOW); los
+once hallazgos de R2 verificados cerrados. Disposición:
+
+- **MED (el `catch` del executor resolvía sin congelar: vigilante vivo →
+  `onNoSpeech` tras un `recognition_failed` ya resuelto):** corregido —
+  `freezeSpeak`/`freezeListen` en el alcance de la fábrica, invocadas por
+  el desplazamiento, la cancelación y el `catch`; el `catch` congela antes
+  de resolver. Sondas nuevas en C-011-01 (suscripción hostil → `error`
+  con `pending()===0`) y C-011-03 (`Recognition` con setter `lang` que
+  lanza → `recognition_failed`, sin anuncios tras resolver ni vigilante
+  vivo). Durante la corrección se detectó y reparó un sombreado
+  (`const state` interna dejaba el `catch` con `null`).
+- **LOW (fuga de `retained` en locución desplazada):** corregido —
+  `freezeSpeak` filtra la utterance del estado congelado.
+- **LOW (DADO de C-011-14 incoherente con la entrega única):** corregido
+  — el caso enmendado: el duplicado llega tras la entrega única, con la
+  escucha ya cerrada.
+- **LOW preexistente (señal ya abortada al entrar + callbacks antes de
+  `resolve`):** corregido — señal pre-abortada trata la escucha como
+  cancelada; `finish` resuelve antes de anunciar.
+
+Re-ronda R2c sobre el delta corregido: registro abajo al ejecutarse.
 
 ## 4. Generalización de la mutación por parche
 

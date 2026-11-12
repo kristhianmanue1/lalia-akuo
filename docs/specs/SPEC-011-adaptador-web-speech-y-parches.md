@@ -333,9 +333,11 @@ retirar el parche lo deja en rojo.
   (`P-09`).
 - **C-011-13** DADO un doble WebKit que termina sin resultado CUANDO ocurre
   ENTONCES el resultado es `no_speech`, nunca un valor cero (`P-10`).
-- **C-011-14** DADO un doble Blink que reemite el resultado final cuando la
-  escucha sigue abierta CUANDO llega el duplicado ENTONCES se entrega una
-  sola interpretación (`P-11`).
+- **C-011-14** DADO un doble Blink que reemite el resultado final después
+  de la entrega única CUANDO llega el duplicado ENTONCES se entrega una
+  sola interpretación y nada más cambia (`P-11`, enmienda R2b de
+  `PLAN-003`: la entrega única cierra la escucha, así que el duplicado
+  llega con ella ya cerrada).
 - **C-011-15** DADO un doble Blink que emite resultados interinos CUANDO se
   escucha ENTONCES la escucha se arranca declarando resultados interinos y
   cada parcial llega a `onPartial` (`P-12`).

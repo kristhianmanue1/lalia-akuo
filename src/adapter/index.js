@@ -195,19 +195,24 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
     return () => {};
   }
 
+  // Congelar una locución: desarmar su vigilante, soltar su retención y
+  // cerrarla sin resolver — usada por el desplazamiento, la cancelación y
+  // el fallo del propio motor.
+  const freezeSpeak = (target) => {
+    if (!target || target.settled) return;
+    if (target.timer !== null) clock.cancelSchedule(target.timer);
+    if (target.detach) target.detach();
+    retained = retained.filter((u) => u !== target.utterance);
+    if (activeSpeak === target) activeSpeak = null;
+    target.settled = true;
+  };
+
   const speaker = {
     // SPE-003/SPEC-011: resuelve 'done' | 'error' | 'watchdog' y nunca
     // rechaza — tampoco si el propio motor lanza al construir su superficie.
     say(text, request) {
       return new Promise((resolve) => {
-        const freezePrevious = () => {
-          const previous = activeSpeak;
-          if (previous && !previous.settled) {
-            if (previous.timer !== null) clock.cancelSchedule(previous.timer);
-            if (previous.detach) previous.detach();
-            previous.settled = true;           // congela sin resolver
-          }
-        };
+        let state = null;
         try {
           if (!engine || !engine.synthesis || typeof engine.Utterance !== 'function') {
             resolve('error');       // sin superficie de voz: fallo declarado
@@ -217,8 +222,8 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
             resolve('error');       // contrato roto: fail-closed, nunca inventa tope
             return;
           }
-          freezePrevious();         // P-03: una locución superseded no vive
-          const state = {
+          freezeSpeak(activeSpeak);  // P-03: una locución superseded no vive
+          state = {
             settled: false,
             generation: ++speakGeneration,
             timer: null,
@@ -291,6 +296,7 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
           });
         }
         } catch {
+          freezeSpeak(state);       // sin efectos diferidos tras el fallo
           resolve('error');        // última línea de defensa: nunca rechaza
         }
       });
@@ -299,12 +305,7 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
     // SPEC-004: síncrona, idempotente, no lanza y no resuelve la promesa.
     cancel() {
       speakGeneration++;                       // P-03: los terminales previos son no-op
-      const state = activeSpeak;
-      if (state && !state.settled) {
-        if (state.timer !== null) clock.cancelSchedule(state.timer);
-        if (state.detach) state.detach();
-        state.settled = true;                  // congela sin resolver
-      }
+      freezeSpeak(activeSpeak);
       retained = [];                           // P-02/P-03: soltar y limpiar la cola
       try { engine && engine.synthesis && engine.synthesis.cancel(); } catch { /* no lanza */ }
     },
@@ -318,12 +319,24 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
     }
   }
 
+  // Congelar una escucha: desarmar su vigilante, soltar su señal y
+  // cerrarla sin resolver ni anunciar — desplazamiento, cancelación,
+  // señal abortada y fallo del propio motor.
+  const freezeListen = (target) => {
+    if (!target || target.settled) return;
+    if (target.timer !== null) clock.cancelSchedule(target.timer);
+    if (target.detachSignal) target.detachSignal();
+    target.settled = true;
+    target.cancelled = true;
+  };
+
   const listener = {
     // SPE-004: resuelve ListeningResult; no rechaza por reconocimiento —
     // tampoco si el propio motor lanza al construir su superficie.
     listen(request, callbacks) {
       return new Promise((resolve) => {
         const cb = callbacks || {};
+        let state = null;
         try {
         if (!engine || typeof engine.Recognition !== 'function') {
           resolve({ type: 'recognition_failed' });
@@ -335,14 +348,8 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
         }
         // P-08: la escucha que desplaza a otra congela sus efectos: su
         // vigilante muerto no puede abortar la instancia vigente.
-        const previous = activeListen;
-        if (previous && !previous.settled) {
-          if (previous.timer !== null) clock.cancelSchedule(previous.timer);
-          if (previous.detachSignal) previous.detachSignal();
-          previous.cancelled = true;
-          previous.settled = true;
-        }
-        const state = {
+        freezeListen(activeListen);
+        state = {
           settled: false,
           cancelled: false,
           generation: ++listenGeneration,
@@ -353,14 +360,15 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
         };
         activeListen = state;
         const signalAborted = () => !!(state.signal && state.signal.aborted);
+        // Una señal que ya llegó abortada es una petición muerta: se
+        // congela igual que el abort en vuelo (C-011-18).
+        if (signalAborted()) state.cancelled = true;
         const finish = (result, announce) => {
           if (state.settled) return;
           if (state.cancelled) {
             // Cancelada (por señal o por desplazamiento): ni resultado ni
             // callbacks — lo posterior a la cancelación es no-op (SPEC-004).
-            state.settled = true;
-            if (state.timer !== null) clock.cancelSchedule(state.timer);
-            if (state.detachSignal) state.detachSignal();
+            freezeListen(state);
             return;
           }
           state.settled = true;
@@ -368,11 +376,11 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
           if (state.detachSignal) state.detachSignal();
           stopRecognition();
           if (activeListen === state) activeListen = null;
+          resolve(result);                       // primero el desenlace…
           if (announce === 'no_speech' && typeof cb.onNoSpeech === 'function') cb.onNoSpeech();
           if (announce === 'error' && typeof cb.onError === 'function') {
-            cb.onError({ code: 'recognition_failed' });
+            cb.onError({ code: 'recognition_failed' });   // …y el anuncio no cuelga la promesa
           }
-          resolve(result);
         };
         // P-10: el silencio es un caso propio — el presupuesto agotado sin
         // habla resuelve no_speech, nunca un valor cero (C-011-13).
@@ -454,6 +462,7 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
         }
         startSegment();
         } catch {
+          freezeListen(state);   // sin efectos diferidos tras el fallo
           resolve({ type: 'recognition_failed' });  // nunca rechaza
         }
       });
@@ -462,13 +471,7 @@ export function createWebSpeechAdapter(voiceEngine, runtime = {}, preferences = 
     // SPEC-004: síncrona, idempotente, no lanza y no resuelve la promesa.
     cancel() {
       listenGeneration++;
-      const state = activeListen;
-      if (state && !state.settled) {
-        state.cancelled = true;
-        if (state.timer !== null) clock.cancelSchedule(state.timer);
-        if (state.detachSignal) state.detachSignal();
-        state.settled = true;                  // congela sin resolver
-      }
+      freezeListen(activeListen);
       stopRecognition();
     },
   };

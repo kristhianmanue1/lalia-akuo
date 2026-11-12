@@ -153,6 +153,12 @@ test('C-011-01 say resuelve done/error/watchdog y sólo el terminal real es done
   roto.Utterance = class { constructor() { throw new Error('constructor-roto'); } };
   const { speaker: speakerRoto } = armar(roto, fakeClock());
   assert.equal(await speakerRoto.say('hola', request().request), 'error');
+  const hostil = makeEngine({ voices: [] });     // y suscripción hostil:
+  const clockH = fakeClock();
+  hostil.synthesis.addEventListener = () => { throw new Error('hostil'); };
+  const { speaker: speakerH } = armar(hostil, clockH);
+  assert.equal(await speakerH.say('hola', request(20000).request), 'error');
+  assert.equal(clockH.pending(), 0);             // sin vigilante huérfano
 });
 
 test('C-011-02 sin terminal y con voz, el presupuesto agotado es watchdog', async () => {
@@ -183,6 +189,22 @@ test('C-011-03 el silencio es no_speech y el error de motor recognition_failed',
   const { listener: listenerRoto } = armar(roto, clock);
   assert.deepEqual(await listenerRoto.listen(request().request, {}),
     { type: 'recognition_failed' });             // tampoco rechaza
+  const congelado = makeEngine();                // y configuración hostil:
+  congelado.Recognition = class {
+    constructor() {}
+    set lang(valor) { throw new Error('setter-lang'); }
+  };
+  const clockC = fakeClock();
+  let efectosC = 0;
+  const { listener: listenerC } = armar(congelado, clockC);
+  const escuchaC = listenerC.listen(request(30000).request, {
+    onNoSpeech: () => { efectosC += 1; },
+    onError: () => { efectosC += 1; },
+  });
+  assert.deepEqual(await escuchaC, { type: 'recognition_failed' });
+  clockC.advance(30000);                         // el presupuesto vence después
+  assert.equal(efectosC, 0);                     // sin anuncios tras resolver
+  assert.equal(clockC.pending(), 0);             // ni vigilante vivo
 });
 
 test('C-011-04 voces que llegan tarde por voiceschanged se esperan (P-01)', async () => {
