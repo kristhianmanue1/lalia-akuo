@@ -221,6 +221,16 @@ ADAPTER_CAPABILITIES = {
 - Los `callbacks` de la escucha: `onPartial`, `onNoSpeech`, `onError`.
 - `voiceEngine`: la superficie del motor, inyectada; por omisión, los
   objetos globales del navegador cuando existen.
+- `runtime`: el reloj del vigilante, inyectado —el mismo par cerrado del
+  núcleo, `{ schedule, cancelSchedule }` (`SPEC-001`, `C-001-19`)—, con el
+  planificador del entorno como omisión declarada. **Enmienda (12-11-2026,
+  Ola 1 de `../plans/PLAN-003-adaptador-spec-011-por-olas.md`)**: los casos
+  C-011-02, C-011-04 y C-011-24 exigen que `budgetMs` transcurra y el
+  contrato no declaraba ningún reloj para el adaptador. La entrada se
+  valida **fail-closed** en la creación: claves cerradas, pareja completa o
+  ausente, y funciones; media pareja, clave de más o miembro que no es
+  función se rechazan (`C-011-25`). En las pruebas, reloj falso: ningún
+  temporizador real decide nada.
 - La preferencia de voz y de idioma que el consumidor declare, o las de
   omisión del entorno.
 
@@ -340,6 +350,11 @@ retirar el parche lo deja en rojo.
 - **C-011-24** DADO un doble sin ninguna voz para el idioma declarado CUANDO
   se agota el presupuesto de la locución ENTONCES el resultado es `error` y
   nunca `done` ni `watchdog` (`P-01`, `P-13`).
+- **C-011-25** DADO un `runtime` malformado —media pareja, una clave
+  desconocida o un miembro que no es función— CUANDO se crea el adaptador
+  ENTONCES se rechaza en cerrado en la frontera y no se crea ningún puerto
+  (enmienda del reloj inyectable; procedencia: rondas R1/R1b de
+  `../plans/PLAN-003-adaptador-spec-011-por-olas.md`).
 
 ## Invariantes
 
@@ -356,10 +371,13 @@ retirar el parche lo deja en rojo.
 - El silencio es un caso propio de la escucha, nunca un valor cero.
 - Una cancelación propia no es un error y no deja eventos con efecto.
 - Un resultado tardío, cancelado o de otro turno es no-op (`SPEC-002`).
+- El reloj del vigilante es inyectable (`runtime = { schedule,
+  cancelSchedule }`) y se valida fail-closed en la creación; su omisión es
+  el planificador del entorno (enmienda de la Ola 1, `C-011-25`).
 
 **Cobertura de requisitos.** `REQ-18`: C-011-04 a C-011-17 y C-011-24
 —una prueba por parche obligatorio, de modo que quitarlo la ponga en
 rojo—, más C-011-19, C-011-20 y C-011-23 para la lista cerrada y la matriz
-por motor. Los casos C-011-01 a C-011-03, C-011-18, C-011-21 y C-011-22
-comprueban la implementación de los puertos `speaker` y `listener` que fijan
-`SPEC-001` y `SPEC-003`; no añaden requisitos nuevos.
+por motor. Los casos C-011-01 a C-011-03, C-011-18, C-011-21, C-011-22 y
+C-011-25 comprueban la implementación de los puertos `speaker` y `listener`
+que fijan `SPEC-001` y `SPEC-003`; no añaden requisitos nuevos.

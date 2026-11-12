@@ -39,7 +39,7 @@ quiere decir que ninguno la tiene todavía.
 | `SPEC-008-readback-fiel-y-degradacion-a-manual.md` | implementada | `../src/core/session.js` |
 | `SPEC-009-accesibilidad-e-interfaz-minima.md` | pendiente | Necesita DOM: la interfaz mínima y los anuncios por cambio de estado son de la capa de vista, que el núcleo no toca |
 | `SPEC-010-protocolo-agente-pagina.md` | pendiente | El canal de agente no entra en la primera versión (`ADR-003`, `ADR-005`). Su spec fija la frontera como contrato; implementarlo es de una etapa posterior |
-| `SPEC-011-adaptador-web-speech-y-parches.md` | pendiente | Necesita un motor de voz real. Los catorce parches sólo se pueden escribir y medir contra Safari y Blink |
+| `SPEC-011-adaptador-web-speech-y-parches.md` | implementada | `../src/adapter/index.js` con dobles; la medición en navegador es la Ola 2 de `PLAN-003` |
 
 ## 3. Cómo se comprueba y cómo se retoma
 
@@ -103,9 +103,10 @@ que quedan se declaran.
   consumidor de la biblioteca, no parte de ella.
 - **`SPEC-010` es contrato sin implementación.** Su frontera está escrita para
   que el canal entre después sin rehacer el núcleo (`ADR-008`).
-- **`SPEC-011` no se puede cerrar sin dispositivo.** Los parches están por
-  síntoma y condición y cada uno tiene su prueba declarada, pero escribir el
-  adaptador exige un motor de voz real.
+- **`SPEC-011` implementada con dobles; sin medir en navegador.** Los
+  catorce parches y sus casos tienen prueba con dobles
+  (`../src/adapter/index.js`); la matriz de `ADR-009` y la ventana de
+  `ADR-011` exigen dispositivos reales (Ola 2 de `PLAN-003`).
 - **Una rama sin cubrir.** Quitar la consulta a la compuerta antes de hablar no
   pone ninguna prueba en rojo, porque la rama no es alcanzable sin clases
   bloqueadas declaradas. Con `SPEC-009` o `SPEC-010` implementadas dejaría de
@@ -201,6 +202,9 @@ sin respaldo es justo lo que este método prohíbe.
   PLAN-003 (`npm run gate`, Python 3.12 del venv): `check_sizes` OK con
   98 archivos y ruta de lectura 1594/1600, las 66 del método y las 159
   de la biblioteca; registro por commit en `../plans/informe-ola-0.md`.
+- La Ola 1 (T-01) el 12-11-2026: adaptador con dobles, 25 casos de
+  SPEC-011 y mutación de muestra verificada (quitar parche → rojo);
+  registro en `../plans/informe-ola-1.md`.
 
 - La puerta completa en verde (`sh scripts/run-gate.sh`, con Python 3.12 del
   venv): `check_sizes` OK con 93 archivos y ruta de lectura 1577/1600, las 66
@@ -236,7 +240,8 @@ sin respaldo es justo lo que este método prohíbe.
   veredicto `proceed`** (§5.3); los MED sin corrección quedaron justificados
   en §4 y el residual bajo, declarado.
 - **Nada se ha ejecutado en un navegador.** El núcleo es determinista y se
-  prueba con dobles; el adaptador real (`SPEC-011`) no existe.
+  prueba con dobles; el adaptador de `SPEC-011` existe y pasa sus casos con
+  dobles, pero la medición contra Safari y Blink es la Ola 2 de `PLAN-003`.
 - **La ventana de compatibilidad no se ha medido.** Sin dispositivo no hay
   medición, y sin medición no se declara compatibilidad (`ADR-011`).
 

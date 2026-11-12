@@ -21,7 +21,12 @@ compila y pasa sus pruebas, y la superficie pública es pequeña y estable por
 commit mientras dure esta etapa. La revisión que puede cambiar el modo está
 fijada para el **30 de diciembre de 2026** (`ADR-010`).
 
-- Entrada única: `src/index.js` (`package.json` → `exports["."]`).
+- Entradas: `.` → `src/index.js` (el núcleo) y `./adapter` →
+  `src/adapter/index.js` (el adaptador de motor, `SPEC-011`); ambas en
+  `package.json` → `exports`. La frontera real es la superficie de §2, no
+  el mapa `exports`: bajo consumo por copia se importa por ruta y el mapa
+  no restringe nada (enmienda de la Ola 1 de
+  `../plans/PLAN-003-adaptador-spec-011-por-olas.md`).
 - Entorno: Node >= 18 para desarrollo y pruebas; en el navegador, los
   motores objetivo de `ADR-009` bajo la ventana de `ADR-011` (§7).
 - Sin dependencias de ejecución y sin paso de construcción: módulos ES tal
@@ -29,7 +34,8 @@ fijada para el **30 de diciembre de 2026** (`ADR-010`).
 
 ## 2. Superficie pública
 
-Lo que no está en esta lista no es superficie pública (`src/index.js`):
+Lo que no está en esta lista no es superficie pública (`src/index.js` y
+`src/adapter/index.js`):
 
 | Nombre | Qué es | Procedencia |
 |---|---|---|
@@ -39,6 +45,7 @@ Lo que no está en esta lista no es superficie pública (`src/index.js`):
 | `SPEECH_BUDGET_MS`, `TURN_BUDGET_MS` | Los techos de tiempo por puerto | `SPEC-003`, `SPEC-004` |
 | `createCatalog`, `interpolate`, `verifyPack`, `DEFAULT_READ_BUDGET` | El mecanismo de paquetes de idioma | `SPEC-007` |
 | `PACK_ES` | El paquete español de la biblioteca (claves propias, no de dominio) | `SPEC-007` |
+| `createWebSpeechAdapter`, `PATCHES`, `ADAPTER_CAPABILITIES` (subentrada `./adapter`) | El adaptador de motor Web Speech: puertos `speaker`/`listener`, los catorce parches obligatorios y su declaración de capacidades | `SPEC-011` |
 | `ConfigError`, `PortContractError`, `MissingTextError`, `MissingPlaceholderError`, `InvalidPackError` | Los errores de frontera | `SPEC-001`, `SPEC-004`, `SPEC-007` |
 
 Todo lo demás —`src/core/*` sin pasar por `index.js`— es interno y puede

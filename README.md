@@ -67,7 +67,8 @@ pierde el gate de push en silencio si no se repite.
 
 El modo vigente es la **copia desde el repositorio**, sin registro de
 paquetes (`ADR-010`): importa por ruta; cada commit copiado compila y pasa
-sus pruebas. La entrada única es `src/index.js`.
+sus pruebas. Las entradas son `src/index.js` (el núcleo) y
+`src/adapter/index.js` (el adaptador de motor, `SPEC-011`).
 
 ```js
 import { createVoiceSession, PACK_ES } from '<ruta-a-lalia-akuo>/src/index.js';
