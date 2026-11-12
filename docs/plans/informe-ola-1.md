@@ -102,7 +102,34 @@ once hallazgos de R2 verificados cerrados. Disposición:
   `resolve`):** corregido — señal pre-abortada trata la escucha como
   cancelada; `finish` resuelve antes de anunciar.
 
-Re-ronda R2c sobre el delta corregido: registro abajo al ejecutarse.
+Re-ronda R2c sobre el delta corregido: ejecutada, registro a continuación.
+
+**R2c (12-11-2026) — re-ronda sobre f2187c7.** Veredicto: **fix-and-retry**
+(1 MED, 2 LOW); el producto quedó correcto y el bloqueo fue del aparato de
+verificación. Corregido en `d8eaa68`: `pendiente()` era tautológico (el
+literal del `race` ganaba siempre) y se volvió honesto demorado un
+microtask; sondas de señal pre-abortada y callback hostil añadidas a
+C-011-18; instancia previa abortada cuando una escucha muerta desplaza a
+una viva.
+
+**R2d (12-11-2026) — re-ronda sobre d8eaa68.** Veredicto: **fix-and-retry**
+(1 MED, 2 LOW). Corregido en `a29aa41`: assert de C-011-06 movido a inline
+tras el evento bajo prueba (la captura adelantada lo cegaba); sonda
+aislada del huérfano con motor propio en C-011-18; `stopRecognition()` en
+el `catch` de `listen()`.
+
+**R2e (12-11-2026) — re-ronda de cierre sobre a29aa41.** Veredicto:
+**proceed** (2 LOW declarados, no bloqueantes), con sondeos de mutación
+que demuestran que los asserts nuevos enrojecen de verdad ante regresiones
+P-03 y del huérfano. Residuales declarados con seguimiento:
+
+- **LOW (cobertura):** el `stopRecognition()` del `catch` no tiene sonda
+  con `request` de getter hostil; queda como deuda del aparato.
+- **LOW (borde defensivo):** un `budgetMs` hostil que lanza antes del
+  desplazamiento aborta el tramo de una escucha viva y P-07 la re-escucha;
+  camino defensivo de un request ya roto, sin pérdida de turno.
+
+FIN ola-1 R2 11 hallazgos (2H/4M/4L) · R2b 4 (1M/3L) · R2c 3 (1M/2L) · R2d 3 (1M/2L) · R2e proceed con 2 LOW declarados · gate final en verde (101 archivos, ruta 1599/1600, 25 casos de SPEC-011 y 184 pruebas) · SPEC-011 implementada con dobles; medición en navegador = Ola 2
 
 ## 4. Generalización de la mutación por parche
 
