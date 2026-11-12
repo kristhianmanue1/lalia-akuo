@@ -29,7 +29,8 @@ Implementar `src/adapter/` (código en inglés): una fábrica
 congeladas `PATCHES` (14 entradas: `id`, `engine`, `symptom`, `trigger`,
 `test`) y `ADAPTER_CAPABILITIES`. Superficie del motor inyectada; los
 globales del navegador sólo como omisión. Sus pruebas (`tests/spec-011.test.js`) cubren
-los 24 casos de la spec con dobles de motor, citando cada `C-011-*`.
+**todos los casos declarados** —los 24 existentes y el que añada la
+enmienda del reloj de abajo— con dobles de motor, citando cada `C-011-*`.
 
 **Reloj inyectable (hallazgo HIGH de R1).** Los casos C-011-02, C-011-04 y
 C-011-24 exigen que `budgetMs` transcurra, y SPEC-011 no declara ningún

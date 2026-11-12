@@ -187,7 +187,8 @@ y su almacenamiento; nada de su dominio entra aquí, y su spec v1.0 aún no
 declara este consumo (deuda suya, no nuestra). El paso activo pasa a ser
 el 3 —`SPEC-011`, por olas con rondas adversariales—: propuesta en
 `../plans/PROP-003-adaptador-spec-011-por-olas.md` y plan en
-`../plans/PLAN-003-adaptador-spec-011-por-olas.md`.
+`../plans/PLAN-003-adaptador-spec-011-por-olas.md`; la Ola 0 cierra con
+`../plans/informe-ola-0.md` y la corrida del gate aquí en §6.
 
 ## 6. Qué está verificado y qué no
 

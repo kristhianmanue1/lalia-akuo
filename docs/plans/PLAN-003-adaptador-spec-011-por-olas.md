@@ -3,8 +3,9 @@
 > Artefacto según `templates/skevi/plan-de-implementacion.md`. Nace de
 > `PROP-003-adaptador-spec-011-por-olas.md` y su ronda adversarial R1
 > (§Rondas). Ejecución por olas: cada una cierra con gate en verde y ronda
-> sobre su delta. **Ola 0** (deriva documental y este paquete) ya está
-> aplicada en la rama `agent/ola-0-reactivacion`.
+> sobre su delta. **Ola 0** (deriva documental y este paquete) aplicada en
+> la rama `agent/ola-0-reactivacion`; **cierra** con
+> `informe-ola-0.md` y la corrida del gate registrada en `estado.md` §6.
 
 ```text
 PLAN 003 — adaptador de motor de voz (SPEC-011) por olas
@@ -33,7 +34,8 @@ TAREA T-01 (Ola 1) — adaptador con dobles y superficie pública
   Consumes: SPEC-001 (request, vocabulario, runtime C-001-19), SPEC-002
             (callbacks, disciplina de turno), SPEC-003 (enumerado de
             locución y presupuesto), SPEC-004 (firmas de speaker/listener),
-            SPEC-011 (contrato completo: 14 parches, 24 casos),
+            SPEC-011 (contrato completo: 14 parches, 24 casos más el que
+            añada la enmienda del paso 1),
             docs/product/contrato-de-consumo.md §1–§2
   Produce:  src/adapter/index.js (createWebSpeechAdapter(voiceEngine?,
             runtime?), PATCHES, ADAPTER_CAPABILITIES, congelados),
@@ -54,10 +56,12 @@ TAREA T-01 (Ola 1) — adaptador con dobles y superficie pública
         (voiceEngine, runtime) y los globales sólo como omisión —
         verificación: node --check src/adapter/index.js; grep de globales
         sólo en la omisión, nunca en el arranque del módulo
-  - [ ] Escribir tests/spec-011.test.js cubriendo C-011-01 a C-011-24 con
-        dobles de motor y reloj falso, cada caso citando su identificador
-        — verificación: node --test tests/spec-011.test.js → 24 pass;
-        grep setTimeout en el test → sin resultados; mutación de muestra:
+  - [ ] Escribir tests/spec-011.test.js cubriendo todos los casos
+        declarados tras la enmienda —C-011-01 a C-011-24 y el nuevo del
+        paso 1— con dobles de motor y reloj falso, cada caso citando su
+        identificador — verificación: node --test
+        tests/spec-011.test.js → todos en pass; grep setTimeout en el
+        test → sin resultados; mutación de muestra:
         comentar un parche → su prueba en rojo
   - [ ] Voltear SPEC-011 a implementada en estado.md §2 con la celda de
         motivo reescrita (la implementación con dobles no espera
@@ -125,7 +129,8 @@ TAREA T-03 (Ola 3) — cierre por evidencia
 
 DoD:
 - gate completo en verde (check_sizes, 66 del método, npm test completo)
-- SPEC-011 implementada: 24 casos con prueba que cita su identificador
+- SPEC-011 implementada: todos sus casos declarados —los 24 originales y
+  el nuevo de la enmienda— con prueba que cita su identificador
 - PATCHES y ADAPTER_CAPABILITIES exportados, congelados y legibles
 - matriz de medición registrada por navegador, o su falta declarada
 - compatibilidad declarada sólo con estado de medición (ADR-011)
@@ -138,7 +143,7 @@ Partición: no excede límite; no parte.
 
 **R1 (12-11-2026) — sobre PROP-003 + PLAN-003, revisor de contexto fresco
 en sólo lectura.** Veredicto: **fix-and-retry** (2 HIGH, 4 MED, 1 LOW).
-Disposición de cada hallazgo, corregida en esta misma oleada:
+Disposición de cada hallazgo:
 
 - **HIGH-1 (matriz de 5 celdas, Edge móvil omitido):** corregido — la
   matriz es ahora las **seis celdas** de `ADR-009` en PROP-003 §O-2 y
@@ -160,18 +165,23 @@ Disposición de cada hallazgo, corregida en esta misma oleada:
   «un disparo por parche aplicable».
 - **MED-4 (evidencia de §6 anterior a los commits de Ola 0):** corregido
   — §6 registra la corrida del gate al cierre de la Ola 0. **R1b halló
-  que la disposición se adelantaba:** el registro entra en el commit de
-  cierre de la Ola 0 (el que añade `informe-ola-0.md`), no antes; hasta
-  ese commit es un compromiso con dueño explícito —el cierre de esta
-  ola— y no una corrección ya aplicada.
+  que la disposición se adelantaba:** el registro entra en el commit que
+  añade `informe-ola-0.md`, no antes; hasta ese commit es un compromiso
+  con dueño explícito —el cierre de esta ola— y no una corrección ya
+  aplicada.
+- **LOW-1 (`exports` no es frontera bajo consumo por copia):** corregido
+  como declaración explícita en PROP-003 §O-1 y en el paso de enmienda
+  del contrato.
+
+Re-ronda R1b sobre el paquete corregido: ver registro abajo.
 
 **R1b (12-11-2026) — re-ronda sobre el paquete corregido, revisor de
 contexto fresco en sólo lectura.** Veredicto: **fix-and-retry** (1 HIGH,
 1 MED, 2 LOW). Disposición:
 
 - **HIGH (MED-4 declarado corregido sin estarlo):** corregido en el
-  cierre — §6 se actualiza con la corrida al cierre de la Ola 0 en el
-  mismo commit que este registro final (ver arriba).
+  cierre — §6 se actualiza con la corrida del gate al cierre de la Ola 0
+  en el commit que añade `docs/plans/informe-ola-0.md`.
 - **MED (T-01 sin paso de ronda):** corregido — T-01 gana su paso de
   ronda adversarial con verificación de veredicto y re-ronda.
 - **LOW (validación de runtime malformado sin declarar):** corregido —
@@ -182,8 +192,23 @@ contexto fresco en sólo lectura.** Veredicto: **fix-and-retry** (1 HIGH,
   C-011-08; sin superficie nueva (PROP-003 §O-1).
 
 Re-ronda R1c sobre estos ajustes: ver registro abajo.
-- **LOW-1 (`exports` no es frontera bajo consumo por copia):** corregido
-  como declaración explícita en PROP-003 §O-1 y en el paso de enmienda
-  del contrato.
 
-Re-ronda R1b sobre el paquete corregido: ver registro abajo.
+**R1c (12-11-2026) — re-ronda sobre el delta de 8cb6f85, revisor de
+contexto fresco en sólo lectura.** Veredicto: **fix-and-retry** (1 HIGH,
+2 MED, 1 LOW). Disposición:
+
+- **HIGH (conteos sin reconciliar tras prometer un caso nuevo):**
+  corregido — todas las menciones pasan a «todos los casos declarados»:
+  PROP-003 §O-1, Consumes de T-01, paso 3 de T-01 y DoD.
+- **MED (bloque R1b insertado en medio de la lista de R1, LOW-1 huérfano
+  y puntero R1b sobrante):** corregido — §Rondas reordenado: R1 completa,
+  puntero R1b, bloque R1b, puntero R1c.
+- **MED (cierre de la Ola 0 no trazable desde estado.md §5 ni desde la
+  cabecera):** corregido — la cabecera de este plan y la nota de
+  reactivación de `estado.md` §5 declaran el cierre con
+  `informe-ola-0.md` y la corrida del gate en §6.
+- **LOW (frase auto-referencial en la disposición R1b):** corregido —
+  nombra el artefacto explícito: «el commit que añade
+  `docs/plans/informe-ola-0.md`».
+
+Re-ronda R1d sobre estos ajustes: se registra abajo al ejecutarse.
