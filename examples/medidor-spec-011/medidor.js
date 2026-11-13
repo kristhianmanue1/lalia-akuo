@@ -9,7 +9,7 @@
 import { createWebSpeechAdapter } from '../../src/adapter/index.js';
 import {
   CELLS, emptyRegistry, toCompactJson, accepts, notObservableFor,
-  scenariosForCell, coverageOf,
+  cellMatchesUserAgent, scenariosForCell, coverageOf,
 } from './medidor-core.js';
 
 const registry = emptyRegistry();
@@ -62,6 +62,10 @@ function describeEngine() {
     + (voices.length ? ' (' + voices.slice(0, 3).map((v) => v.lang).join(', ') + '…)' : ''));
   log('userAgent (sólo registro de medición; el adaptador no lo lee): '
     + navigator.userAgent);
+  if (!cellMatchesUserAgent(CELL, navigator.userAgent)) {
+    log('AVISO: el userAgent no corresponde a la celda «' + CELL
+      + '» — revisa ?cell= antes de medir');
+  }
 }
 
 function request(budgetMs) {
@@ -150,16 +154,18 @@ async function medirIdiomaSinVoz() {
     log('activa la voz primero (costura de activación de SPEC-009)');
     return;
   }
+  // P-13 con «qaa»: rango BCP-47 reservado para uso local. Ningún
+  // entorno instala voces qaa-*, así el disparo —ninguna voz para el
+  // idioma— siempre se reproduce (con «fr» falló el 2026-11-13: los
+  // equipos traían voces francesas y la locución terminó done).
   const voces = globalThis.speechSynthesis
     ? globalThis.speechSynthesis.getVoices() : [];
-  const francesas = voces.filter((v) => /^fr/i.test(v.lang || '')).length;
-  if (francesas > 0) {
-    log('ojo: hay ' + francesas + ' voces «fr»: el disparo no se reproduce');
+  const raras = voces.filter((v) => /^qaa/i.test(v.lang || '')).length;
+  if (raras > 0) {
+    log('ojo: hay ' + raras + ' voces «qaa»: el disparo no se reproduce');
   }
-  log('P-13 no gasta P-01: un idioma sin voz no ejercita la espera de');
-  log('voces que ese parche mide.');
-  const r = await speakOnce('fr', 'Essai de langue sans voix installée.', { flow: 'P-13' });
-  record('P-13', r.outcome, francesas + ' voces fr · ' + r.ms + ' ms');
+  const r = await speakOnce('qaa', 'Idioma sin voz instalada.', { flow: 'P-13' });
+  record('P-13', r.outcome, raras + ' voces qaa · ' + r.ms + ' ms');
 }
 
 async function medirEscucha() {

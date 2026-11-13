@@ -111,19 +111,25 @@ TAREA T-03 (Ola 3) — cierre por evidencia
             de spec y su caso si cambian), parches recortados sólo por
             evidencia, estado §6 actualizado con la nueva evidencia
   Steps:
-  - [ ] Crear docs/compatibilidad.md declarando objetivo y estado de
+  - [x] Crear docs/compatibilidad.md declarando objetivo y estado de
         medición, enlazado desde contrato §7 — verificación: ninguna fila
         dice compatibilidad sin su medición; npm run gate en verde
-  - [ ] Ajustar SPEECH_BUDGET_MS/TURN_BUDGET_MS a valores medidos sólo si
-        la medición los contradice — verificación: enmienda de SPEC-003/
-        SPEC-004 con su caso y su prueba en el mismo commit; npm test
-  - [ ] Recortar parches sólo con evidencia de motor fuera de objetivo —
+        (13-11-2026: matriz con 4 celdas medidas + sonda, dos sin medir,
+        sin declarar compatibilidad)
+  - [x] Ajustar SPEECH_BUDGET_MS/TURN_BUDGET_MS a valores medidos sólo si
+        la medición los contradice — sin cambio y sin enmienda: las
+        locuciones medidas (1,9–3,4 s) y las escuchas quedan muy por
+        debajo de 20000/30000; npm test en verde, valores intactos
+  - [x] Recortar parches sólo con evidencia de motor fuera de objetivo —
         el recorte arrastra su cascada en el mismo commit: caso fuera de
         SPEC-011, prueba fuera de tests/, fila y total de
         docs/specs/00-INDICE.md ajustados — verificación: cada recorte
         cita su medición; PATCHES sigue cerrado y C-011-19 sigue en
         verde; npm run gate en verde (la trazabilidad y el total del
-        índice caen en rojo si la cascada queda a medias)
+        índice caen en rojo si la cascada queda a medias) —
+        **sin recortes el 13-11-2026**: ningún motor quedó fuera del
+        objetivo; el hallazgo de la sonda P-05 se resolvió por enmienda
+        de la spec (medición 13-11-2026), no por recorte
   - [ ] Ronda adversarial final sobre el delta — verificación: veredicto
         proceed; npm run gate en verde
 

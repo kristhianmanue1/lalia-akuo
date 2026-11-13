@@ -11,9 +11,14 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   CELLS, SCENARIOS, emptyRegistry, toCompactJson, accepts,
-  scenariosForCell, coverageOf, notObservableFor,
+  scenariosForCell, coverageOf, notObservableFor, cellMatchesUserAgent,
 } from '../examples/medidor-spec-011/medidor-core.js';
 import { PATCHES } from '../src/adapter/index.js';
+
+const UA_SAFARI_MAC = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15';
+const UA_SAFARI_IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1';
+const UA_CHROME_MAC = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36';
+const UA_EDGE_MAC = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0';
 
 test('la matriz declara las seis celdas de ADR-009 por motor', () => {
   assert.equal(CELLS.length, 6);
@@ -55,6 +60,26 @@ test('la sonda P-05 es un flujo propio, separado de la activación', () => {
   const p05 = SCENARIOS.find((s) => s.id === 'P-05');
   assert.equal(p05.flow, 'probe');
   assert.deepEqual(p05.accept, ['error']);
+});
+
+test('la celda edge-mobile es Edge en Android: en iOS, Edge es WebKit', () => {
+  const edge = CELLS.find((c) => c.id === 'edge-mobile');
+  assert.equal(edge.label, 'Edge · Android');
+  assert.equal(edge.engine, 'blink');   // ADR-009: matriz por motor
+});
+
+test('cellMatchesUserAgent detecta navegador y plataforma por celda', () => {
+  // Casos reales de la medición del 2026-11-13
+  assert.equal(cellMatchesUserAgent('safari-macos', UA_SAFARI_MAC), true);
+  assert.equal(cellMatchesUserAgent('safari-ios', UA_SAFARI_IPHONE), true);
+  assert.equal(cellMatchesUserAgent('chrome-desktop', UA_CHROME_MAC), true);
+  assert.equal(cellMatchesUserAgent('edge-desktop', UA_EDGE_MAC), true);
+  // Los errores de etiqueta de esa noche, ahora detectables
+  assert.equal(cellMatchesUserAgent('safari-macos', UA_EDGE_MAC), false);      // 01
+  assert.equal(cellMatchesUserAgent('safari-macos', UA_SAFARI_IPHONE), false); // 05
+  assert.equal(cellMatchesUserAgent('safari-ios', UA_SAFARI_MAC), false);      // 11
+  assert.equal(cellMatchesUserAgent('edge-desktop', UA_CHROME_MAC), false);
+  assert.equal(cellMatchesUserAgent('celda-inexistente', UA_SAFARI_MAC), false);
 });
 
 test('los accept discriminan el síntoma que cada parche caza', () => {

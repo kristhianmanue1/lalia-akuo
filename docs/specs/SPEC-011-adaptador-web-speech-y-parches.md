@@ -131,11 +131,14 @@ P-04 · engine: both · cierre duplicado
 P-05 · engine: webkit · primera locución sin activación
   Síntoma: la primera locución no arranca y no llega evento terminal.
   Disparo: `say()` sin activación de usuario previa en móvil.
-  Parche: resolver `error` en el acto —nunca `watchdog` ni `done`—; la
+  Parche: resolver `error` en el acto —nunca `watchdog` ni `done`—
+    **cuando el motor lo señala** (`not-allowed`); sin señal del motor,
+    rige el contrato general del vigilante: `watchdog` con voz presente
+    (enmienda de la Ola 3, medición 13-11-2026: la sonda sin activación
+    en Safari iOS no produjo evento alguno y resolvió `watchdog`). La
     exposición de que la voz exige activación es la costura de
-    `SPEC-009` —la vista presenta el aviso y recoge la activación— y se
-    materializa en la Ola 2 de `PLAN-003`; lo testeable aquí es el
-    `error` en el acto.
+    `SPEC-009` —la vista presenta el aviso y recoge la activación antes
+    de arrancar—; lo testeable aquí es el `error` en el acto con señal.
   Prueba: C-011-08.
 
 P-06 · engine: webkit · síntesis que arranca en pausa
@@ -269,7 +272,7 @@ ADAPTER_CAPABILITIES = {
 | no hay superficie de voz en el entorno | locución `error`; escucha `recognition_failed` | salida declarada del núcleo; nunca éxito simulado |
 | sin evento terminal antes de `budgetMs` y con voz disponible | `watchdog` | el turno **no** encadena; ninguna transición por tiempo |
 | ninguna voz para el idioma declarado, aunque se agote `budgetMs` | `error` | el turno no encadena; salida declarada; nunca `watchdog` |
-| locución sin activación de usuario en móvil | `error` | el turno no encadena; la interfaz presenta el aviso y recoge la activación |
+| locución sin activación de usuario en móvil, con el motor señalando `not-allowed` | `error` | el turno no encadena; la interfaz presenta el aviso y recoge la activación; sin señal del motor: `watchdog` (medición 13-11-2026) |
 | `cancel()` durante la locución o la escucha | resultado tardío no-op | sin efecto; no hay evento de éxito |
 | segundo evento terminal de la misma locución | no-op | sin efecto; cierre único |
 | `end` sin resultado | `no_speech` | caso propio, nunca un valor cero |

@@ -122,9 +122,10 @@ degradación también se anuncia (`C-008-16`).
 
 La compatibilidad se define por **ventana de tiempo** —cuatro años desde la
 primera versión estable de cada motor—, no por lista de versiones
-(`ADR-011`). Esa ventana es hoy un **objetivo sin medir**: nada se ha
-ejecutado en un navegador real y «sin medición no se declara compatibilidad»
-(`estado.md` §6, `SPEC-011`). No hay versionado semántico público mientras
+(`ADR-011`). Sin medición no se declara compatibilidad: el **estado medido
+por celda** vive en [`../compatibilidad.md`](compatibilidad.md) (matriz de
+`ADR-009`, registro en `plans/informe-ola-2-medicion.md`). No hay
+versionado semántico público mientras
 no haya releases; mientras tanto, la superficie de §2 es estable por commit
 (`ADR-010`) y los cambios incompatibles se documentan con guía de migración.
 

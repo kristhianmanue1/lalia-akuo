@@ -35,10 +35,15 @@ En iOS/Android, sirve desde la raíz en tu computadora y abre la URL
    silencio sí es la condición), **Doble escucha** (P-08, sin recargar),
    **Permiso denegado** (P-14: deniega el micrófono cuando aparezca la
    petición) y **Cancelación** (P-03/09: la página cancela por ti y
-   observa qué queda sin resolver). Para **P-13**, pulsa «Idioma sin voz».
+   observa qué queda sin resolver). Para **P-13**, pulsa «Idioma sin voz»:
+   el medidor locuta en `qaa` (rango BCP-47 reservado; ningún entorno
+   trae voces `qaa-*`, así el disparo siempre se reproduce — con «fr»
+   la medición del 2026-11-13 no valió porque había voces francesas).
    **P-04 y P-11 no se registran por diseño**: la duplicación que cazan no
    atraviesa la promesa (la entrega única queda probada con dobles); el
    JSON los lleva como `notObservable` (sólo los aplicables por motor).
+   La página **avisa si el navegador no corresponde a la celda** elegida:
+   si ves el aviso, corrige `?cell=` antes de medir.
 3. Cada parche se registra con el desenlace **observado**; un desenlace
    fuera de los aceptados marca `fail`, y una celda sólo cuenta como
    medida cuando se recorrió todo lo aplicable (la cobertura se deriva

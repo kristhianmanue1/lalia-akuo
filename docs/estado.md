@@ -39,7 +39,7 @@ quiere decir que ninguno la tiene todavía.
 | `SPEC-008-readback-fiel-y-degradacion-a-manual.md` | implementada | `../src/core/session.js` |
 | `SPEC-009-accesibilidad-e-interfaz-minima.md` | pendiente | Necesita DOM: la interfaz mínima y los anuncios por cambio de estado son de la capa de vista, que el núcleo no toca |
 | `SPEC-010-protocolo-agente-pagina.md` | pendiente | El canal de agente no entra en la primera versión (`ADR-003`, `ADR-005`). Su spec fija la frontera como contrato; implementarlo es de una etapa posterior |
-| `SPEC-011-adaptador-web-speech-y-parches.md` | implementada | `../src/adapter/index.js` con dobles; la medición en navegador es la Ola 2 de `PLAN-003` |
+| `SPEC-011-adaptador-web-speech-y-parches.md` | implementada | `../src/adapter/index.js`; matriz medida 13-11-2026 (4 celdas + sonda P-05): ver `../compatibilidad.md` |
 
 ## 3. Cómo se comprueba y cómo se retoma
 
@@ -103,10 +103,9 @@ que quedan se declaran.
   consumidor de la biblioteca, no parte de ella.
 - **`SPEC-010` es contrato sin implementación.** Su frontera está escrita para
   que el canal entre después sin rehacer el núcleo (`ADR-008`).
-- **`SPEC-011` implementada con dobles; sin medir en navegador.** Los
-  catorce parches y sus casos tienen prueba con dobles
-  (`../src/adapter/index.js`); la matriz de `ADR-009` y la ventana de
-  `ADR-011` exigen dispositivos reales (Ola 2 de `PLAN-003`).
+- **`SPEC-011` medida en 4 celdas + sonda.** Dos celdas móviles sin
+  dispositivo; P-13 pendiente de remedir con `qaa`; el hallazgo P-05 y
+  el estado por celda viven en `../compatibilidad.md`.
 - **Una rama sin cubrir.** Quitar la consulta a la compuerta antes de hablar no
   pone ninguna prueba en rojo, porque la rama no es alcanzable sin clases
   bloqueadas declaradas. Con `SPEC-009` o `SPEC-010` implementadas dejaría de
@@ -198,13 +197,14 @@ sin respaldo es justo lo que este método prohíbe.
 
 **Verificado, con su comando:**
 
-- La puerta completa en verde el 12-11-2026 al cierre de la Ola 0 de
-  PLAN-003 (`npm run gate`, Python 3.12 del venv): `check_sizes` OK con
-  98 archivos y ruta de lectura 1594/1600, las 66 del método y las 159
-  de la biblioteca; registro por commit en `../plans/informe-ola-0.md`.
-- La Ola 1 (T-01) el 12-11-2026: adaptador con dobles, 25 casos de
-  SPEC-011 y mutación de muestra (P-06 fuera → C-011-09 en rojo), con la
-  generalización por parche registrada en `../plans/informe-ola-1.md`.
+- La puerta en verde el 12-11-2026 al cierre de la Ola 0 (`npm run
+  gate`): 98 archivos, ruta 1594/1600, 66+159 pruebas; registro en
+  `../plans/informe-ola-0.md`.
+- La Ola 1 (T-01) el 12-11-2026: adaptador con dobles, 25 casos y
+  mutación de muestra (registro en `../plans/informe-ola-1.md`).
+- La matriz de SPEC-011 medida por el Operador el 13-11-2026 (4 celdas +
+  sonda P-05), registrada en `../plans/informe-ola-2-medicion.md` con su
+  evidencia cruda y declarada en `../compatibilidad.md`.
 
 - La puerta completa en verde (`sh scripts/run-gate.sh`, con Python 3.12 del
   venv): `check_sizes` OK con 93 archivos y ruta de lectura 1577/1600, las 66
@@ -239,9 +239,9 @@ sin respaldo es justo lo que este método prohíbe.
 - **Los fixes de la ronda pasaron re-ronda y verificación final con
   veredicto `proceed`** (§5.3); los MED sin corrección quedaron justificados
   en §4 y el residual bajo, declarado.
-- **Nada se ha ejecutado en un navegador.** El núcleo es determinista y se
-  prueba con dobles; el adaptador de `SPEC-011` existe y pasa sus casos con
-  dobles, pero la medición contra Safari y Blink es la Ola 2 de `PLAN-003`.
+- **Nada más sin medir que lo declarado.** La matriz real (4 celdas +
+  sonda) vive en `../compatibilidad.md`; `chrome-android`, `edge-mobile`
+  y `edge-desktop/P-12` siguen sin medir.
 - **La ventana de compatibilidad no se ha medido.** Sin dispositivo no hay
   medición, y sin medición no se declara compatibilidad (`ADR-011`).
 

@@ -1,0 +1,245 @@
+{
+ "consolidadoPor": "ASISTENTE2",
+ "fecha": "2026-11-13",
+ "cells": {
+  "safari-macos": {
+   "P-01": {
+    "outcome": "done",
+    "ok": "pass",
+    "detail": "flujo P-02 · primera locución resuelta de la carga · 2846 ms",
+    "at": "2026-11-13T05:05:15.024Z",
+    "source": "02-safari-macos.json"
+   },
+   "P-02": {
+    "outcome": "done",
+    "ok": "pass",
+    "detail": "2846 ms",
+    "at": "2026-11-13T05:05:15.024Z",
+    "source": "02-safari-macos.json"
+   },
+   "P-03": {
+    "outcome": "done",
+    "ok": "pass",
+    "detail": "cancelada congelada · nueva done",
+    "at": "2026-11-13T05:05:57.499Z",
+    "source": "02-safari-macos.json"
+   },
+   "P-06": {
+    "outcome": "done",
+    "ok": "pass",
+    "detail": "observacional · 2679 ms",
+    "at": "2026-11-13T05:05:18.469Z",
+    "source": "02-safari-macos.json"
+   },
+   "P-07": {
+    "outcome": "speech",
+    "ok": "pass",
+    "detail": "tramos con re-escucha",
+    "at": "2026-11-13T05:05:27.297Z",
+    "source": "02-safari-macos.json"
+   },
+   "P-08": {
+    "outcome": "speech",
+    "ok": "pass",
+    "detail": "segunda escucha sin recargar",
+    "at": "2026-11-13T05:05:41.726Z",
+    "source": "02-safari-macos.json"
+   },
+   "P-09": {
+    "outcome": "cancelled-clean",
+    "ok": "pass",
+    "detail": "promesa sin resolver · 0 callbacks tras la cancelación",
+    "at": "2026-11-13T05:06:00.001Z",
+    "source": "02-safari-macos.json"
+   },
+   "P-13": {
+    "outcome": "done",
+    "ok": "fail",
+    "detail": "3 voces fr · 1987 ms",
+    "at": "2026-11-13T05:06:05.494Z",
+    "source": "02-safari-macos.json"
+   },
+   "P-14": {
+    "outcome": "recognition_failed",
+    "ok": "pass",
+    "detail": "permiso denegado",
+    "at": "2026-11-13T11:06:53.210Z",
+    "source": "11-safari-macos-p14-ETIQUETADO-safari-ios.json"
+   },
+   "P-10": {
+    "outcome": "no_speech",
+    "ok": "pass",
+    "detail": "presupuesto en silencio",
+    "at": "2026-11-13T10:53:15.051Z",
+    "source": "08-safari-macos-p10.json"
+   }
+  },
+  "chrome-desktop": {
+   "P-01": {
+    "outcome": "done",
+    "ok": "pass",
+    "detail": "flujo P-02 · primera locución resuelta de la carga · 3402 ms",
+    "at": "2026-11-13T05:08:09.190Z",
+    "source": "03-chrome-desktop.json"
+   },
+   "P-02": {
+    "outcome": "done",
+    "ok": "pass",
+    "detail": "3402 ms",
+    "at": "2026-11-13T05:08:09.191Z",
+    "source": "03-chrome-desktop.json"
+   },
+   "P-03": {
+    "outcome": "done",
+    "ok": "pass",
+    "detail": "cancelada congelada · nueva done",
+    "at": "2026-11-13T05:08:39.121Z",
+    "source": "03-chrome-desktop.json"
+   },
+   "P-12": {
+    "outcome": "speech",
+    "ok": "pass",
+    "detail": "15 parciales",
+    "at": "2026-11-13T05:08:20.042Z",
+    "source": "03-chrome-desktop.json"
+   },
+   "P-13": {
+    "outcome": "done",
+    "ok": "fail",
+    "detail": "19 voces fr · 1945 ms",
+    "at": "2026-11-13T05:08:43.250Z",
+    "source": "03-chrome-desktop.json"
+   },
+   "P-14": {
+    "outcome": "recognition_failed",
+    "ok": "pass",
+    "detail": "permiso denegado",
+    "at": "2026-11-13T10:51:46.084Z",
+    "source": "07-chrome-desktop-p14.json"
+   }
+  },
+  "edge-desktop": {
+   "P-01": {
+    "outcome": "done",
+    "ok": "pass",
+    "detail": "flujo P-02 · primera locución resuelta de la carga · 2347 ms",
+    "at": "2026-11-13T05:11:29.036Z",
+    "source": "04-edge-desktop.json"
+   },
+   "P-02": {
+    "outcome": "done",
+    "ok": "pass",
+    "detail": "2347 ms",
+    "at": "2026-11-13T05:11:29.036Z",
+    "source": "04-edge-desktop.json"
+   },
+   "P-03": {
+    "outcome": "done",
+    "ok": "pass",
+    "detail": "cancelada congelada · nueva done",
+    "at": "2026-11-13T05:12:01.704Z",
+    "source": "04-edge-desktop.json"
+   },
+   "P-13": {
+    "outcome": "done",
+    "ok": "fail",
+    "detail": "31 voces fr · 1993 ms",
+    "at": "2026-11-13T05:12:03.964Z",
+    "source": "04-edge-desktop.json"
+   },
+   "P-14": {
+    "outcome": "recognition_failed",
+    "ok": "pass",
+    "detail": "permiso denegado",
+    "at": "2026-11-13T05:11:54.871Z",
+    "source": "04-edge-desktop.json"
+   }
+  },
+  "safari-ios": {
+   "P-01": {
+    "outcome": "done",
+    "ok": "pass",
+    "detail": "flujo P-02 · primera locución resuelta de la carga · 2105 ms",
+    "at": "2026-11-13T10:57:09.590Z",
+    "source": "10-safari-ios-celda-completa.json"
+   },
+   "P-02": {
+    "outcome": "done",
+    "ok": "pass",
+    "detail": "2105 ms",
+    "at": "2026-11-13T10:57:09.590Z",
+    "source": "10-safari-ios-celda-completa.json"
+   },
+   "P-03": {
+    "outcome": "done",
+    "ok": "pass",
+    "detail": "cancelada congelada · nueva done",
+    "at": "2026-11-13T10:59:32.576Z",
+    "source": "10-safari-ios-celda-completa.json"
+   },
+   "P-06": {
+    "outcome": "done",
+    "ok": "pass",
+    "detail": "observacional · 2781 ms",
+    "at": "2026-11-13T10:57:58.003Z",
+    "source": "10-safari-ios-celda-completa.json"
+   },
+   "P-07": {
+    "outcome": "speech",
+    "ok": "pass",
+    "detail": "tramos con re-escucha",
+    "at": "2026-11-13T10:58:11.735Z",
+    "source": "10-safari-ios-celda-completa.json"
+   },
+   "P-08": {
+    "outcome": "no_speech",
+    "ok": "pass",
+    "detail": "segunda escucha sin recargar",
+    "at": "2026-11-13T10:59:33.393Z",
+    "source": "10-safari-ios-celda-completa.json"
+   },
+   "P-09": {
+    "outcome": "cancelled-clean",
+    "ok": "pass",
+    "detail": "promesa sin resolver · 0 callbacks tras la cancelación",
+    "at": "2026-11-13T10:59:35.078Z",
+    "source": "10-safari-ios-celda-completa.json"
+   },
+   "P-10": {
+    "outcome": "no_speech",
+    "ok": "pass",
+    "detail": "presupuesto en silencio",
+    "at": "2026-11-13T10:58:49.513Z",
+    "source": "10-safari-ios-celda-completa.json"
+   },
+   "P-13": {
+    "outcome": "done",
+    "ok": "fail",
+    "detail": "3 voces fr · 1989 ms",
+    "at": "2026-11-13T10:59:41.679Z",
+    "source": "10-safari-ios-celda-completa.json"
+   },
+   "P-14": {
+    "outcome": "recognition_failed",
+    "ok": "pass",
+    "detail": "permiso denegado",
+    "at": "2026-11-13T11:03:15.720Z",
+    "source": "10-safari-ios-celda-completa.json"
+   }
+  }
+ },
+ "probeP05": {
+  "measured": true,
+  "outcome": "watchdog",
+  "ok": "fail",
+  "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1",
+  "platform": "iPhone",
+  "at": "2026-11-13T10:55:09.076Z",
+  "source": "09-iphone-sonda-p05.json"
+ },
+ "sinMedir": {
+  "chrome-android": "sin dispositivo",
+  "edge-mobile": "celda mal cableada (blink) — no medible en iPhone",
+  "edge-desktop/P-12": "reconocimiento falla en esta máquina (2 intentos, 06-…json vacío)"
+ }
+}

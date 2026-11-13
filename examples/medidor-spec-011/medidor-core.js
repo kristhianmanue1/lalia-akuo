@@ -14,8 +14,36 @@ export const CELLS = Object.freeze([
   Object.freeze({ id: 'chrome-desktop', engine: 'blink', label: 'Chrome · escritorio' }),
   Object.freeze({ id: 'chrome-android', engine: 'blink', label: 'Chrome · Android' }),
   Object.freeze({ id: 'edge-desktop', engine: 'blink', label: 'Edge · escritorio' }),
-  Object.freeze({ id: 'edge-mobile', engine: 'blink', label: 'Edge · móvil' }),
+  // Edge en iOS usa WebKit (política de plataforma), no Blink: no aporta
+  // un motor nuevo —la cobertura WebKit móvil la da safari-ios— y la
+  // celda blink de Edge corresponde a Android (ADR-009: matriz por motor).
+  Object.freeze({ id: 'edge-mobile', engine: 'blink', label: 'Edge · Android' }),
 ]);
+
+// Heurística de etiquetado: ¿el userAgent reporta el navegador/plataforma
+// que la celda declara? Evita el error de medir en un navegador y
+// registrar en otro (dos veces el 2026-11-13). No es la fuente de verdad
+// de la medición: es un aviso.
+export function cellMatchesUserAgent(cellId, userAgent) {
+  const ua = String(userAgent || '');
+  const iphone = ua.includes('iPhone');
+  const android = ua.includes('Android');
+  const mac = ua.includes('Macintosh') && !iphone && !android;
+  const edge = ua.includes('Edg/');
+  const chrome = ua.includes('Chrome/') && !edge;
+  const safari = ua.includes('Safari/') && !chrome && !edge;
+  const desktop = mac;
+  const mobile = iphone || android;
+  switch (cellId) {
+    case 'safari-macos': return safari && desktop;
+    case 'safari-ios': return safari && iphone;
+    case 'chrome-desktop': return chrome && desktop;
+    case 'chrome-android': return chrome && android;
+    case 'edge-desktop': return edge && desktop;
+    case 'edge-mobile': return edge && android;
+    default: return false;
+  }
+}
 
 // Cada escenario dice qué medir y qué desenlaces acepta el parche. El
 // identificador es el del parche (P-01..P-14), no de navegador: un parche
