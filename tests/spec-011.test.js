@@ -560,7 +560,8 @@ test('C-011-24 sin voz para el idioma, el presupuesto agotado es error, nunca wa
   assert.equal(await promesa, 'error');            // ni done ni watchdog
 });
 
-test('C-011-25 runtime malformado se rechaza en cerrado y no crea puertos', () => {  const engine = makeEngine();
+test('C-011-25 runtime malformado se rechaza en cerrado y no crea puertos', () => {
+  const engine = makeEngine();
   const clock = fakeClock();
   const reloj = { schedule: clock.schedule, cancelSchedule: clock.cancel };
   const malformed = [

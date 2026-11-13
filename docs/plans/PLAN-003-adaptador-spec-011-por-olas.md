@@ -130,8 +130,12 @@ TAREA T-03 (Ola 3) — cierre por evidencia
         **sin recortes el 13-11-2026**: ningún motor quedó fuera del
         objetivo; el hallazgo de la sonda P-05 se resolvió por enmienda
         de la spec (medición 13-11-2026), no por recorte
-  - [ ] Ronda adversarial final sobre el delta — verificación: veredicto
-        proceed; npm run gate en verde
+  - [x] Ronda adversarial final sobre el delta — verificación: veredicto
+        proceed; npm run gate en verde — ejecutada el 13-11-2026 en dos
+        asaltos (R5 fix-and-retry con 1 HIGH/1 MED/2 LOW, corregidos en
+        5e1cfc7; R5c **proceed** con 1 LOW cosmético restaurado en el
+        cierre), revisor OpenCode GLM de contexto fresco visible en pane
+        hermano; registro en §Rondas
 
 DoD:
 - gate completo en verde (check_sizes, 66 del método, npm test completo)
@@ -241,3 +245,27 @@ asignó:
   adicionales; R1d verificó su corrección.
 
 Con esto el paquete PROP-003 + PLAN-003 queda ejecutable para la Ola 1.
+
+**R5 (13-11-2026) — sobre el delta 4ea5a8b (Ola 3), revisor OpenCode GLM
+de contexto fresco en pane hermano (visible), sólo lectura.** El primer
+lanzamiento (lalia-r5) se cortó por cuota Z.AI; reanudado como lalia-r5b.
+Veredicto: **fix-and-retry** (1 HIGH, 1 MED, 2 LOW). Disposición, en
+`5e1cfc7`:
+
+- **HIGH (C-011-08 contradecía la rama sin señal del P-05 enmendado):**
+  corregido — el DADO acotado al doble que **señala** `not-allowed`, y
+  caso nuevo **C-011-26** para la rama sin señal (motor mudo → watchdog
+  con voz presente), con cascada completa (26 casos, índice 194, prueba
+  nueva, estado §6).
+- **MED (escenario P-05 del medidor con accept pre-enmienda):** corregido
+  — accept `['error','watchdog']` con las dos ramas explicadas; el
+  `fail` histórico de la sonda queda narrado como tal en el registro.
+- **LOW (causa de P-12-edge sin traza en JSON):** corregido — presentada
+  como reporte del Operador, sin desenlace en `06`.
+- **LOW (primeras pasadas fallidas de P-14 no narradas):** corregido —
+  nota de re-medición en el registro.
+
+**R5c — re-ronda sobre 5e1cfc7.** Veredicto: **proceed**, con 1 LOW
+cosmético (línea de declaración de C-011-25 pegada por la edición),
+restaurado en el commit de cierre. La cascada de C-011-26 quedó verificada
+por el revisor con la trazabilidad en verde.
