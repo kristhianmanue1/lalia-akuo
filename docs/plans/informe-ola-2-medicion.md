@@ -19,15 +19,11 @@ consolidación por celda, en [`matriz-consolidada.json`](medicion-2026-11-13/mat
 | Safari · macOS | webkit | **medida** — 9/10 válidos; P-13 sin medir válido | 2026-11-13 | `02`, `08`, `11` |
 | Safari · iOS | webkit | **medida** — 9/10 válidos; P-13 sin medir válido | 2026-11-13 | `10` |
 | Chrome · escritorio | blink | **medida** — 5/6 válidos; P-13 sin medir válido | 2026-11-13 | `03`, `07` |
-| Edge · escritorio | blink | **medida parcial** — 4/6; P-12 sin medir (reconocimiento fallido en 2 intentos con micrófono permitido, `06`); P-13 sin medir válido | 2026-11-13 | `04` |
+| Edge · escritorio | blink | **medida parcial** — 4/6; P-12 sin medir (reconocimiento fallido en 2 intentos según reporte del Operador; el JSON `06` quedó sin desenlace); P-13 sin medir válido | 2026-11-13 | `04` |
 | Chrome · Android | blink | **sin medir** | — | sin dispositivo |
 | Edge · Android | blink | **sin medir** | — | sin dispositivo (ver nota de celda) |
 
-**Sonda P-05** (WebKit móvil, sin activación): **medida, `watchdog`,
-fail** (`09-iphone-sonda-p05.json`, iPhone, carga fresca sin toque). Es
-hallazgo real contra el parche: el motor no señala la falta de activación
-y sin señal el desenlace honesto es `watchdog` — ver la enmienda de P-05
-en `SPEC-011` y `docs/compatibilidad.md`.
+**Sonda P-05** (WebKit móvil, sin activación): **medida, `watchdog`** (`09-iphone-sonda-p05.json`, iPhone, carga fresca sin toque). Con el `accept` del instrumental de entonces se marcó `fail`; la enmienda de P-05 del 13-11-2026 fija que **sin señal del motor el desenlace especificado es `watchdog`** — el hallazgo real es que WebKit iOS no señala la falta de activación, y el aviso/recogida quedan en la costura de `SPEC-009` (ver `docs/compatibilidad.md`).
 
 ### Notas de la medición
 
@@ -44,6 +40,9 @@ en `SPEC-011` y `docs/compatibilidad.md`.
   `userAgent` es `… Version/27.2 Safari/605.1.15` con `platform:
   MacIntel` — Safari de macOS; se cuenta como **P-14 de safari-macos**
   (el propio iPhone aporta su P-14 en `10`).
+- **P-14 se re-midió:** la primera pasada de `02` y `03` falló (el
+  micrófono no estaba denegado de verdad; outcome `speech`); las
+  mediciones válidas son `07` (Chrome) y `11` (Safari macOS).
 - **Celda Edge móvil:** Edge en iOS usa WebKit, no Blink: no es un motor
   nuevo (la cobertura WebKit móvil la da `safari-ios`) y la celda `blink`
   corresponde a **Edge en Android**. El medidor ya la etiqueta así.

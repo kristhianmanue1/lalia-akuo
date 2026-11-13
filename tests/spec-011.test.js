@@ -560,8 +560,7 @@ test('C-011-24 sin voz para el idioma, el presupuesto agotado es error, nunca wa
   assert.equal(await promesa, 'error');            // ni done ni watchdog
 });
 
-test('C-011-25 runtime malformado se rechaza en cerrado y no crea puertos', () => {
-  const engine = makeEngine();
+test('C-011-25 runtime malformado se rechaza en cerrado y no crea puertos', () => {  const engine = makeEngine();
   const clock = fakeClock();
   const reloj = { schedule: clock.schedule, cancelSchedule: clock.cancel };
   const malformed = [
@@ -578,4 +577,16 @@ test('C-011-25 runtime malformado se rechaza en cerrado y no crea puertos', () =
       'debe rechazar: ' + JSON.stringify(runtime),
     );
   }
+});
+
+test('C-011-26 sin activación y sin señal del motor: watchdog al agotarse', async () => {
+  const clock = fakeClock();
+  const engine = makeEngine();
+  const { speaker } = armar(engine, clock);
+  const { request: req } = request(20000);
+  const promesa = speaker.say('hola', req);
+  // Rama sin señal de P-05: el motor no emite error ni terminal (la sonda
+  // real del 13-11-2026 en Safari iOS observó exactamente esto).
+  clock.advance(20000);
+  assert.equal(await promesa, 'watchdog');    // voz presente, sin terminal
 });

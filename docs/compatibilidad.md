@@ -20,15 +20,17 @@ y su registro vivo está en [`plans/informe-ola-2-medicion.md`](plans/informe-ol
 | Safari · macOS | webkit | **medida** 2026-11-13 | 9/10 válidos; sólo P-13 sin medir válido |
 | Safari · iOS | webkit | **medida** 2026-11-13 | 9/10 válidos; sólo P-13 sin medir válido |
 | Chrome · escritorio | blink | **medida** 2026-11-13 | 5/6 válidos; P-13 sin medir válido |
-| Edge · escritorio | blink | **medida parcial** 2026-11-13 | 4/6; P-12 sin medir (reconocimiento falló con permiso concedido, causa sin determinar) y P-13 sin medir válido |
+| Edge · escritorio | blink | **medida parcial** 2026-11-13 | 4/6; P-12 sin medir (reconocimiento fallido en 2 intentos según reporte del Operador, sin desenlace en el JSON `06`) y P-13 sin medir válido |
 | Chrome · Android | blink | **sin medir** | sin dispositivo |
 | Edge · Android | blink | **sin medir** | sin dispositivo (Edge en iOS es WebKit, no una celda blink) |
 
-**Sonda P-05** (WebKit móvil sin activación): **medida, `watchdog`,
-fail** — el motor no señala la falta de activación y, sin señal, el
-desenlace honesto del adaptador es `watchdog` (`SPEC-011` enmendado el
-13-11-2026). El aviso y la recogida de activación son la costura de
-`SPEC-009`; hallazgo abierto hasta esa capa.
+**Sonda P-05** (WebKit móvil sin activación): **medida, `watchdog`**
+(`09-iphone-sonda-p05.json`): el motor no señala la falta de activación y,
+sin señal, `watchdog` con voz presente es el desenlace especificado desde
+la enmienda de `SPEC-011` del 13-11-2026 (con el instrumental de entonces
+se marcó `fail`). El hallazgo real —WebKit iOS no señala— deja el aviso y
+la recogida de activación en la costura de `SPEC-009`; abierto hasta esa
+capa.
 
 ## Qué se declara y qué no
 

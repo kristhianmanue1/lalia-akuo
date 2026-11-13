@@ -77,8 +77,8 @@ export const SCENARIOS = Object.freeze([
   Object.freeze({
     id: 'P-05', engine: 'webkit', flow: 'probe',
     name: 'primera locución sin activación',
-    how: 'SONDA APARTE (?probe=p05): carga fresca sin tocar nada; locución automática',
-    accept: ['error'],                // en el acto; nunca watchdog ni done
+    how: 'SONDA APARTE (?probe=p05): carga fresca sin tocar nada; locución automática. Con señal del motor (not-allowed): error en el acto; sin señal: watchdog con voz presente (SPEC-011 enmendado 13-11-2026)',
+    accept: ['error', 'watchdog'],   // done sería el síntoma vivo
   }),
   Object.freeze({
     id: 'P-06', engine: 'webkit', flow: 'speaker',

@@ -59,7 +59,7 @@ test('los escenarios no derivan de los PATCHES del adaptador: id y motor coincid
 test('la sonda P-05 es un flujo propio, separado de la activación', () => {
   const p05 = SCENARIOS.find((s) => s.id === 'P-05');
   assert.equal(p05.flow, 'probe');
-  assert.deepEqual(p05.accept, ['error']);
+  assert.deepEqual(p05.accept, ['error', 'watchdog']);  // con/señal; done, nunca
 });
 
 test('la celda edge-mobile es Edge en Android: en iOS, Edge es WebKit', () => {

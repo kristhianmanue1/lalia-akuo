@@ -318,9 +318,10 @@ retirar el parche lo deja en rojo.
 - **C-011-07** DADO un doble que emite el evento terminal dos veces para la
   misma locución CUANDO se habla ENTONCES el cierre se aplica una sola vez y
   el segundo evento es no-op (`P-04`).
-- **C-011-08** DADO un doble de motor WebKit sin activación de usuario previa
-  CUANDO se habla ENTONCES el resultado es `error` en el acto y nunca
-  `watchdog` ni `done` (`P-05`).
+- **C-011-08** DADO un doble de motor WebKit **que señala la falta de
+  activación** (`not-allowed`) sin activación de usuario previa CUANDO se
+  habla ENTONCES el resultado es `error` en el acto y nunca `watchdog` ni
+  `done` (`P-05`; la rama sin señal la fija C-011-26).
 - **C-011-09** DADO un doble cuya cola de síntesis está en pausa al empezar
   la locución CUANDO se habla ENTONCES la cola se reanuda y la locución
   llega a `done` (`P-06`).
@@ -378,6 +379,12 @@ retirar el parche lo deja en rojo.
   ENTONCES se rechaza en cerrado en la frontera y no se crea ningún puerto
   (enmienda del reloj inyectable; procedencia: rondas R1/R1b de
   `../plans/PLAN-003-adaptador-spec-011-por-olas.md`).
+- **C-011-26** DADO un doble de motor WebKit sin activación de usuario
+  previa **que no emite evento alguno** CUANDO se agota el presupuesto de
+  la locución ENTONCES el resultado es `watchdog` —voz presente, sin
+  terminal— como manda el contrato general del vigilante, nunca `done`
+  (`P-05` sin señal; enmienda de la Ola 3, procedencia: sonda real del
+  13-11-2026 en Safari iOS, `../plans/medicion-2026-11-13/09-iphone-sonda-p05.json`).
 
 ## Invariantes
 
@@ -401,6 +408,7 @@ retirar el parche lo deja en rojo.
 **Cobertura de requisitos.** `REQ-18`: C-011-04 a C-011-17 y C-011-24
 —una prueba por parche obligatorio, de modo que quitarlo la ponga en
 rojo—, más C-011-19, C-011-20 y C-011-23 para la lista cerrada y la matriz
-por motor. Los casos C-011-01 a C-011-03, C-011-18, C-011-21, C-011-22 y
-C-011-25 comprueban la implementación de los puertos `speaker` y `listener`
-que fijan `SPEC-001` y `SPEC-003`; no añaden requisitos nuevos.
+por motor. Los casos C-011-01 a C-011-03, C-011-18, C-011-21, C-011-22,
+C-011-25 y C-011-26 comprueban la implementación de los puertos `speaker`
+y `listener` que fijan `SPEC-001` y `SPEC-003`; no añaden requisitos
+nuevos.

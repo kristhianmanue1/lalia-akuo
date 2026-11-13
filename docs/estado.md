@@ -200,7 +200,7 @@ sin respaldo es justo lo que este método prohíbe.
 - La puerta en verde el 12-11-2026 al cierre de la Ola 0 (`npm run
   gate`): 98 archivos, ruta 1594/1600, 66+159 pruebas; registro en
   `../plans/informe-ola-0.md`.
-- La Ola 1 (T-01) el 12-11-2026: adaptador con dobles, 25 casos y
+- La Ola 1 (T-01) el 12-11-2026: adaptador con dobles, 26 casos y
   mutación de muestra (registro en `../plans/informe-ola-1.md`).
 - La matriz de SPEC-011 medida por el Operador el 13-11-2026 (4 celdas +
   sonda P-05), registrada en `../plans/informe-ola-2-medicion.md` con su
